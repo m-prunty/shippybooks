@@ -1,18 +1,17 @@
-from domain.commands import (
+from ..domain import (
+    Book,
+    BookCreated,
+    BookUpdated,
     ChangeOrderStatus,
     Command,
     CreateBook,
     CreateOrder,
-    UpdateBookStock,
-)
-from domain.events import (
-    BookCreated,
-    BookUpdated,
+    Order,
     OrderCreated,
     OrderStatusChanged,
+    UpdateBookStock,
 )
-from domain.models import Book, Order
-from events.bus import EventBus
+from ..events import EventBus
 
 
 class BookRepository:

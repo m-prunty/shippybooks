@@ -1,7 +1,6 @@
 from typing import Any
 
-from domain.queries import GetBook, GetOrder, ListBooks, ListOrders, Query
-
+from ..domain import GetBook, GetOrder, ListBooks, ListOrders, Query
 from .command_handlers import BookRepository, OrderRepository
 
 
