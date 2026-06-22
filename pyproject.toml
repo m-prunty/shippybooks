@@ -7,7 +7,20 @@ authors = [
     { name = "Marcus Prunty", email = "marcusprunty@gmail.com" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "django>=5.2.15",
+    "fastapi>=0.138.0",
+    "pytest>=9.1.1",
+    "uvicorn>=0.49.0",
+]
+
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.mypy]
+pythonpath = ["src"]
 
 [project.scripts]
 shippybooks = "shippybooks:main"

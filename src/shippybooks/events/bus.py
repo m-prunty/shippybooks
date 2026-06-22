@@ -22,8 +22,6 @@ class EventBus:
                 print(f"Event handler failed: {e}")
 
 
-# ========== NOTIFICATIONS ==========
-
 """
 
 class EventBus:
