@@ -2,7 +2,7 @@
 
 import pytest
 
-from ..domain import (
+from shippybooks.domain import (
     Book,
     BookCreated,
     CreateBook,
@@ -12,13 +12,13 @@ from ..domain import (
     Order,
     UpdateBookStock,
 )
-from ..events import (
+from shippybooks.events import (
     EventBus,
     NotificationDispatcher,
     NotificationHandler,
     StockAlert,
 )
-from ..services import (
+from shippybooks.services import (
     BookRepository,
     CommandHandler,
     OrderRepository,

@@ -10,12 +10,22 @@ requires-python = ">=3.11"
 dependencies = [
     "django>=5.2.15",
     "fastapi>=0.138.0",
-    "pytest>=9.1.1",
     "uvicorn>=0.49.0",
 ]
 
-
+[dependency-groups]
+dev = [
+    "mypy>=1.10.0",
+    "pytest>=9.1.1",
+]
 [tool.mypy]
+pythonpath = ["src"]
+python_executable = ".venv/bin/python"
+python_version = "3.11"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 pythonpath = ["src"]
 
 [project.scripts]
