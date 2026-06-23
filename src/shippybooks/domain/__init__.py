@@ -1,5 +1,6 @@
 from .commands import (
     ChangeOrderStatus,
+    Command,
     CreateBook,
     CreateOrder,
     UpdateBookStock,
@@ -28,6 +29,7 @@ from .queries import (
 __all__ = []
 
 __all__ += [
+    "Command",
     "ChangeOrderStatus",
     "CreateBook",
     "CreateOrder",

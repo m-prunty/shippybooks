@@ -15,15 +15,11 @@ dependencies = [
 ]
 
 
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
 [tool.mypy]
 pythonpath = ["src"]
 
 [project.scripts]
-shippybooks = "shippybooks:main"
+shippybooks = "shippybooks.main:main"
 
 [build-system]
 requires = ["uv_build>=0.9.24,<0.10.0"]

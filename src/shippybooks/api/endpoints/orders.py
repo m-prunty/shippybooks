@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, HTTPException
 
 from ...domain import ChangeOrderStatus, CreateOrder, GetOrder, ListOrders
