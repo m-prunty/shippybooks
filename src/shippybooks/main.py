@@ -1,6 +1,7 @@
 """CQRS Notification System — application factory."""
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .api.endpoints import books_router, orders_router
 from .domain.events import (
@@ -74,6 +75,17 @@ def create_app() -> FastAPI:
     app.state.query_handler = query_handler
     app.include_router(books_router, prefix="/api/v1")
     app.include_router(orders_router, prefix="/api/v1")
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "https://mprunty.com",
+            "https://www.mprunty.com",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     return app
 
