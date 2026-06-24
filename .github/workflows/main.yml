@@ -14,14 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.12
-
       - name: Sync app files
         run: |
-          rsync -av --delete ./ /opt/fastapi/shippybooks/
+          rsync -av --delete \
+            --exclude '.git' \
+            --exclude '.venv' \
+            --exclude '__pycache__' \
+            ./ /opt/fastapi/shippybooks/
 
       - name: Install dependencies
         run: |
@@ -30,4 +29,5 @@ jobs:
 
       - name: Restart FastAPI service
         run: |
-          sudo systemctl restart fastap
+          sudo systemctl daemon-reload
+          sudo systemctl restart fastapi
