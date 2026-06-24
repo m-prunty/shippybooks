@@ -1,0 +1,33 @@
+name: Deploy FastAPI
+
+on:
+  push:
+    branches:
+      - master
+
+
+
+jobs:
+  build:
+    runs-on: [fastApi]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Sync app files
+        run: |
+          rsync -av --delete ./ /opt/fastapi/shippybooks/
+
+      - name: Install dependencies
+        run: |
+          cd /opt/fastapi/shippybooks
+          make install-prod
+
+      - name: Restart FastAPI service
+        run: |
+          sudo systemctl restart fastap
