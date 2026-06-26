@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: [react]
+    runs-on: [fastapi]
 
     steps:
       - uses: actions/checkout@v4
