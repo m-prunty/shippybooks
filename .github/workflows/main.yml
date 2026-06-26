@@ -14,12 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          cd /opt/fastapi/shippybooks
-          make install-prod
-
-
       - name: Sync app files
         run: |
           rsync -av --delete \
@@ -27,6 +21,12 @@ jobs:
             --exclude '.venv' \
             --exclude '__pycache__' \
             ./ /opt/fastapi/shippybooks/
+
+
+      - name: Install dependencies
+        run: |
+          cd /opt/fastapi/shippybooks
+          make install-prod
 
 
 
