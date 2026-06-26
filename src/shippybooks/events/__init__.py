@@ -11,11 +11,16 @@ from .notifications import (
     StatusUpdate,
     StockAlert,
 )
+from .store import NotificationStore
 
 __all__ = []
 
 __all__ += [
     "EventBus",
+]
+
+__all__ += [
+    "NotificationStore",
 ]
 
 __all__ += [

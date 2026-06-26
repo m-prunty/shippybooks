@@ -1,5 +1,7 @@
+from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from ..domain import (
     BookCreated,
@@ -12,7 +14,8 @@ from ..domain import (
 
 @dataclass
 class Notification:
-    pass
+    @abstractmethod
+    def to_event(self) -> dict[str, Any]: ...
 
 
 @dataclass
@@ -20,17 +23,40 @@ class OrderConfirmation(Notification):
     order_id: str
     total: float
 
+    def to_event(self) -> dict[str, Any]:
+        return {
+            "kind": "order_confirmation",
+            "message": f"Order #{self.order_id[:8]} confirmed — ${self.total:.2f}",
+            "order_id": self.order_id,
+        }
+
 
 @dataclass
 class StockAlert(Notification):
     book_id: str
     current_stock: int
 
+    def to_event(self) -> dict[str, Any]:
+        return {
+            "kind": "stock_alert",
+            "message": f"Low stock: {self.current_stock} remaining (book {self.book_id[:8]})",
+            "book_id": self.book_id,
+            "current_stock": self.current_stock,
+        }
+
 
 @dataclass
 class StatusUpdate(Notification):
     order_id: str
     new_status: OrderStatus
+
+    def to_event(self) -> dict[str, Any]:
+        return {
+            "kind": "status_update",
+            "message": f"Order #{self.order_id[:8]} → {self.new_status.value}",
+            "order_id": self.order_id,
+            "new_status": self.new_status.value,
+        }
 
 
 class NotificationHandler:
