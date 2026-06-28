@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: [fastapi]
+    runs-on: [fastapi,ec2]
 
     steps:
       - uses: actions/checkout@v4
