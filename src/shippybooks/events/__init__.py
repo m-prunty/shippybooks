@@ -4,6 +4,7 @@ from .bus import (
     EventBus,
 )
 from .notifications import (
+    BookNotification,
     Notification,
     NotificationDispatcher,
     NotificationHandler,
@@ -24,6 +25,7 @@ __all__ += [
 ]
 
 __all__ += [
+    "BookNotification",
     "Notification",
     "NotificationDispatcher",
     "NotificationHandler",

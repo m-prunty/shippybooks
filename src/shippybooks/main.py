@@ -14,6 +14,7 @@ from .domain.events import (
 from .events import NotificationStore  # add to imports
 from .events.bus import EventBus
 from .events.notifications import (
+    BookNotification,
     NotificationDispatcher,
     NotificationHandler,
     OrderConfirmation,
@@ -32,8 +33,9 @@ def _build_notification_handler(
     store: NotificationStore,
 ) -> NotificationHandler:
     handler = NotificationHandler()
-    for cls in (OrderConfirmation, StockAlert, StatusUpdate):
+    for cls in (OrderConfirmation, BookNotification, StockAlert, StatusUpdate):
         handler.register(cls, store.append)
+        print(f"Registered {cls.__name__} → store.append")  # temporary
     return handler
 
 

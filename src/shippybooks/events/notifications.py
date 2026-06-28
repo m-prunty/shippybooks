@@ -19,6 +19,20 @@ class Notification:
 
 
 @dataclass
+class BookNotification(Notification):
+    book_id: str
+    status: str
+    stock: int
+
+    def to_event(self) -> dict[str, Any]:
+        return {
+            "kind": "book_notification",
+            "message": f"Book {self.book_id[:8]} — {self.status} (stock: {self.stock})",
+            "book_id": self.book_id,
+        }
+
+
+@dataclass
 class OrderConfirmation(Notification):
     order_id: str
     total: float
@@ -81,12 +95,22 @@ class NotificationDispatcher:
         self.handler = handler
 
     def on_book_created(self, e: BookCreated) -> None:
-        pass
+        self.handler.dispatch(
+            BookNotification(
+                book_id=e.book.id, status="created", stock=e.book.stock
+            )
+        )
 
     def on_book_updated(self, e: BookUpdated) -> None:
         if e.book.stock < 5:
             self.handler.dispatch(
                 StockAlert(book_id=e.book.id, current_stock=e.book.stock)
+            )
+        else:
+            self.handler.dispatch(
+                BookNotification(
+                    book_id=e.book.id, status="updated", stock=e.book.stock
+                )
             )
 
     def on_order_created(self, e: OrderCreated) -> None:
