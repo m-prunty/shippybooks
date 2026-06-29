@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 
+from pydantic import BaseModel
+
 from .models import OrderStatus
 
 
-@dataclass
-class Command:
+class Command(BaseModel):
     pass
 
 
-@dataclass
 class CreateBook(Command):
     id: str
     title: str
@@ -17,13 +17,11 @@ class CreateBook(Command):
     stock: int
 
 
-@dataclass
 class UpdateBookStock(Command):
     id: str
     quantity: int
 
 
-@dataclass
 class CreateOrder(Command):
     id: str
     items: list[tuple[str, int]]

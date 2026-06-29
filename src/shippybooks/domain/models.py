@@ -1,5 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import field
 from enum import Enum
+
+from pydantic import BaseModel
 
 
 class OrderStatus(Enum):
@@ -11,8 +13,7 @@ class OrderStatus(Enum):
     CANCELLED = "cancelled"
 
 
-@dataclass
-class Book:
+class Book(BaseModel):
     """Book domain aggregate."""
 
     id: str
@@ -26,8 +27,7 @@ class Book:
         self.stock += quantity
 
 
-@dataclass
-class OrderItem:
+class OrderItem(BaseModel):
     """Order item value object."""
 
     book_id: str
@@ -35,8 +35,7 @@ class OrderItem:
     price: float
 
 
-@dataclass
-class Order:
+class Order(BaseModel):
     """Order domain aggregate."""
 
     id: str

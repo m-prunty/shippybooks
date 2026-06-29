@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any
 
 from ..domain import (
@@ -10,6 +11,13 @@ from ..domain import (
     OrderStatus,
     OrderStatusChanged,
 )
+
+
+class Message(StrEnum):
+    BOOK_NOTIFICATION = "Book {0} has been {1}. Current stock: {2}"
+    ORDER_CONFIRMATION = "Order {0} confirmed. Total: ${1:.2f}"
+    STOCK_ALERT = "Low stock alert for book {0}. Current stock: {1}"
+    STATUS_UPDATE = "Order {0} status updated to {1}"
 
 
 @dataclass
@@ -27,7 +35,9 @@ class BookNotification(Notification):
     def to_event(self) -> dict[str, Any]:
         return {
             "kind": "book_notification",
-            "message": f"Book {self.book_id[:8]} — {self.status} (stock: {self.stock})",
+            "message": Message.BOOK_NOTIFICATION.format(
+                self.book_id, self.status, self.stock
+            ),
             "book_id": self.book_id,
         }
 
@@ -40,7 +50,9 @@ class OrderConfirmation(Notification):
     def to_event(self) -> dict[str, Any]:
         return {
             "kind": "order_confirmation",
-            "message": f"Order #{self.order_id[:8]} confirmed — ${self.total:.2f}",
+            "message": Message.ORDER_CONFIRMATION.format(
+                self.order_id, self.total
+            ),
             "order_id": self.order_id,
         }
 
@@ -53,7 +65,9 @@ class StockAlert(Notification):
     def to_event(self) -> dict[str, Any]:
         return {
             "kind": "stock_alert",
-            "message": f"Low stock: {self.current_stock} remaining (book {self.book_id[:8]})",
+            "message": Message.STOCK_ALERT.format(
+                self.book_id, self.current_stock
+            ),
             "book_id": self.book_id,
             "current_stock": self.current_stock,
         }
@@ -67,7 +81,9 @@ class StatusUpdate(Notification):
     def to_event(self) -> dict[str, Any]:
         return {
             "kind": "status_update",
-            "message": f"Order #{self.order_id[:8]} → {self.new_status.value}",
+            "message": Message.STATUS_UPDATE.format(
+                self.order_id, self.new_status.value
+            ),
             "order_id": self.order_id,
             "new_status": self.new_status.value,
         }

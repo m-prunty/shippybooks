@@ -64,6 +64,7 @@ def create_app() -> FastAPI:
         allow_origins=[
             "https://mprunty.com",
             "https://www.mprunty.com",
+            "http://localhost:5173",
         ],
         allow_credentials=True,
         allow_methods=["*"],

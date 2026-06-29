@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 from ...domain import ChangeOrderStatus, CreateOrder, GetOrder, ListOrders
 from ..dependencies import CmdHandlerDep, QueryHandlerDep
@@ -8,18 +9,35 @@ from ..dependencies import CmdHandlerDep, QueryHandlerDep
 router = APIRouter()
 
 
+class CreateOrderRequest(BaseModel):
+    items: list[tuple[str, int]]
+
+
+class ChangeStatusRequest(BaseModel):
+    status: str
+
+
 @router.post("/orders/")
-def create_order(items: list[tuple[str, int]], cmd_handler: CmdHandlerDep):
-    cmd = CreateOrder(id=str(uuid.uuid4()), items=items)
+def create_order(
+    request: CreateOrderRequest,
+    cmd_handler: CmdHandlerDep,
+) -> dict[str, str]:
+    cmd = CreateOrder(id=str(uuid.uuid4()), items=request.items)
     cmd_handler.handle(cmd)
     return {"status": "created", "id": cmd.id}
 
 
 @router.post("/orders/{order_id}/status/")
-def change_status(order_id: str, status: str, cmd_handler: CmdHandlerDep):
+def change_status(
+    order_id: str,
+    request: ChangeStatusRequest,
+    cmd_handler: CmdHandlerDep,
+) -> dict[str, str]:
     try:
         cmd_handler.handle(
-            ChangeOrderStatus(id=order_id, new_status=OrderStatus(status))
+            ChangeOrderStatus(
+                id=order_id, new_status=OrderStatus(request.status)
+            )
         )
     except ValueError:
         raise HTTPException(400, "Invalid status")
