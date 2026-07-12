@@ -1,4 +1,5 @@
-from typing import Annotated
+from dataclasses import dataclass
+from typing import Annotated, cast
 
 from fastapi import Depends, Request
 
@@ -6,16 +7,33 @@ from ..events import NotificationStore
 from ..services import CommandHandler, QueryHandler
 
 
+@dataclass(frozen=True, slots=True)
+class AppState:
+    """Typed view of the objects attached to `app.state` at startup."""
+
+    cmd_handler: CommandHandler
+    query_handler: QueryHandler
+    notification_store: NotificationStore
+
+
+def get_app_state(request: Request) -> AppState:
+    """Return the typed application state for the current request."""
+    return cast(AppState, request.app.state.app_state)
+
+
 def get_cmd_handler(request: Request) -> CommandHandler:
-    return request.app.state.cmd_handler
+    """Return the shared command handler."""
+    return get_app_state(request).cmd_handler
 
 
 def get_query_handler(request: Request) -> QueryHandler:
-    return request.app.state.query_handler
+    """Return the shared query handler."""
+    return get_app_state(request).query_handler
 
 
 def get_notification_store(request: Request) -> NotificationStore:
-    return request.app.state.notification_store
+    """Return the shared notification store."""
+    return get_app_state(request).notification_store
 
 
 CmdHandlerDep = Annotated[CommandHandler, Depends(get_cmd_handler)]
