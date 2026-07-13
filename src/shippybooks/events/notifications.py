@@ -1,3 +1,5 @@
+"""Notification system for the bookstore application."""
+
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -14,6 +16,8 @@ from ..domain import (
 
 
 class Message(StrEnum):
+    """Message templates for notifications."""
+
     BOOK_NOTIFICATION = "Book {0} has been {1}. Current stock: {2}"
     ORDER_CONFIRMATION = "Order {0} confirmed. Total: ${1:.2f}"
     STOCK_ALERT = "Low stock alert for book {0}. Current stock: {1}"
@@ -22,17 +26,22 @@ class Message(StrEnum):
 
 @dataclass
 class Notification:
+    """Base class for notifications."""
+
     @abstractmethod
     def to_event(self) -> dict[str, Any]: ...
 
 
 @dataclass
 class BookNotification(Notification):
+    """Notification for book creation or update."""
+
     book_id: str
     status: str
     stock: int
 
     def to_event(self) -> dict[str, Any]:
+        """Convert the book notification to an event dictionary."""
         return {
             "kind": "book_notification",
             "message": Message.BOOK_NOTIFICATION.format(
@@ -44,10 +53,13 @@ class BookNotification(Notification):
 
 @dataclass
 class OrderConfirmation(Notification):
+    """Notification for order confirmation."""
+
     order_id: str
     total: float
 
     def to_event(self) -> dict[str, Any]:
+        """Convert the order confirmation notification to an event dict."""
         return {
             "kind": "order_confirmation",
             "message": Message.ORDER_CONFIRMATION.format(
@@ -59,10 +71,13 @@ class OrderConfirmation(Notification):
 
 @dataclass
 class StockAlert(Notification):
+    """Notification for low stock alert."""
+
     book_id: str
     current_stock: int
 
     def to_event(self) -> dict[str, Any]:
+        """Convert the stock alert notification to an event dictionary."""
         return {
             "kind": "stock_alert",
             "message": Message.STOCK_ALERT.format(
@@ -75,6 +90,8 @@ class StockAlert(Notification):
 
 @dataclass
 class StatusUpdate(Notification):
+    """Notification for order status update."""
+
     order_id: str
     new_status: OrderStatus
 
@@ -91,10 +108,14 @@ class StatusUpdate(Notification):
 
 class NotificationHandler:
     def __init__(self) -> None:
-        self._handlers: dict[type[Notification], list[Callable]] = {}
+        self._handlers: dict[
+            type[Notification], list[Callable[[Notification], None]]
+        ] = {}
 
     def register(
-        self, notify_type: type[Notification], handler: Callable
+        self,
+        notify_type: type[Notification],
+        handler: Callable[[Notification], None],
     ) -> None:
         self._handlers.setdefault(notify_type, []).append(handler)
 

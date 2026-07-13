@@ -1,15 +1,19 @@
-from dataclasses import dataclass
+"""Commands for the bookstore application."""
 
 from pydantic import BaseModel
 
-from .models import OrderStatus
+from .models import OrderItem, OrderStatus
 
 
 class Command(BaseModel):
+    """Base class for commands."""
+
     pass
 
 
 class CreateBook(Command):
+    """Command to create a new book."""
+
     id: str
     title: str
     author: str
@@ -18,16 +22,21 @@ class CreateBook(Command):
 
 
 class UpdateBookStock(Command):
+    """Command to update the stock of a book."""
+
     id: str
     quantity: int
 
 
 class CreateOrder(Command):
+    """Command to create a new order."""
+
     id: str
-    items: list[tuple[str, int]]
+    items: list[OrderItem]
 
 
-@dataclass
 class ChangeOrderStatus(Command):
+    """Command to change the status of an order."""
+
     id: str
     new_status: OrderStatus

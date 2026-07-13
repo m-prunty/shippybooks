@@ -1,7 +1,9 @@
-from dataclasses import field
+"""Domain models for the bookstore application."""
+
+from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class OrderStatus(Enum):
@@ -32,14 +34,15 @@ class OrderItem(BaseModel):
 
     book_id: str
     quantity: int
-    price: float
 
 
 class Order(BaseModel):
     """Order domain aggregate."""
 
     id: str
-    items: list[OrderItem] = field(default_factory=list)
+    items: list[OrderItem] = Field(default_factory=list)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
     status: OrderStatus = OrderStatus.PENDING
     total: float = 0.0
 
@@ -52,59 +55,4 @@ class Order(BaseModel):
     def change_status(self, new_status: OrderStatus) -> None:
         """Change order status."""
         self.status = new_status
-
-
-"""
-@dataclass
-class Book:
-    book_key: int
-    title: str
-    stock: int
-
-    def change_stock(self, amount):
-        self.stock += amount
-        EventBus.publish(
-            "StockChanged", {"book_id": self.id, "new_stock": self.stock}
-        )
-
-
-class OrderStatus(Enum):
-    PENDING = "Pending"
-    PLACED = "Placed"
-    SHIPPED = "Shipped"
-    DELIVERED = "Delivered"
-
-
-@dataclass
-class Order:
-    order_key: int
-    book_key: int
-    qty: int
-    status: OrderStatus = OrderStatus.PENDING
-
-    def place_order(self):
-        self.status = OrderStatus.PLACED
-        EventBus.publish(
-            "OrderPlaced",
-            {"order_id": self.order_key, "book_id": self.book_key},
-        )
-
-    def fulfill_order(self):
-        self.status = OrderStatus.SHIPPED
-        EventBus.publish(
-            "OrderShipped",
-            {"order_id": self.order_key, "book_id": self.book_key},
-        )
-
-
-@dataclass
-class Customer:
-    key: int
-    name: str
-    contact_info: str
-
-
-@dataclass
-class Notification:
-    message: str
-    """
+        self.last_updated = datetime.utcnow()

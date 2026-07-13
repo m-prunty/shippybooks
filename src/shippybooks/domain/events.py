@@ -1,30 +1,35 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 from .models import Book, Order, OrderStatus
 
 
-@dataclass
-class DomainEvent:
+class DomainEvent(BaseModel):
+    """Base class for domain events."""
+
     pass
 
 
-@dataclass
 class BookCreated(DomainEvent):
+    """Event triggered when a new book is created."""
+
     book: Book
 
 
-@dataclass
 class BookUpdated(DomainEvent):
+    """Event triggered when a book is updated."""
+
     book: Book
 
 
-@dataclass
 class OrderCreated(DomainEvent):
+    """Event triggered when a new order is created."""
+
     order: Order
 
 
-@dataclass
 class OrderStatusChanged(DomainEvent):
+    """Event triggered when an order's status is changed."""
+
     order_id: str
     old_status: OrderStatus
     new_status: OrderStatus
