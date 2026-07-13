@@ -10,5 +10,5 @@ run:
 test:
 	uv run pytest
 
-type:
-	uv run mypy src
+lint:
+	uv run mypy --strict src
