@@ -7,3 +7,5 @@
 [A Practical Introduction to the Event Driven Architecture(GO)](https://dev.to/jimjunior/a-practical-introduction-to-the-event-driven-architecture-dol)
 [Real-World Event Driven Architecture](https://streamkap.com/resources-and-guides/event-driven-architecture-examples)
 [Event Sourcing with PostgreSQL](https://medium.com/@tobyhede/event-sourcing-with-postgresql-28c5e8f211a2)
+
+[SQLAlchemy patterns](https://tessl.io/registry/tessl-labs/sqlalchemy-best-practices)
