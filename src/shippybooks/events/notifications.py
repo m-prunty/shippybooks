@@ -1,6 +1,6 @@
 """Notification system for the bookstore application."""
 
-from abc import abstractmethod
+from abc import ABC,abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
@@ -24,15 +24,15 @@ class Message(StrEnum):
     STATUS_UPDATE = "Order {0} status updated to {1}"
 
 
-@dataclass
-class Notification:
+@dataclass(frozen=True, slots=True)
+class Notification(ABC):
     """Base class for notifications."""
 
     @abstractmethod
     def to_event(self) -> dict[str, Any]: ...
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BookNotification(Notification):
     """Notification for book creation or update."""
 
@@ -51,7 +51,7 @@ class BookNotification(Notification):
         }
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class OrderConfirmation(Notification):
     """Notification for order confirmation."""
 
@@ -69,7 +69,7 @@ class OrderConfirmation(Notification):
         }
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class StockAlert(Notification):
     """Notification for low stock alert."""
 
@@ -88,7 +88,8 @@ class StockAlert(Notification):
         }
 
 
-@dataclass
+
+@dataclass(frozen=True, slots=True)
 class StatusUpdate(Notification):
     """Notification for order status update."""
 

@@ -1,7 +1,7 @@
 """Events module."""
 
 from .bus import (
-    EventBus,
+        EventBus,
 )
 from .notifications import (
     BookNotification,
