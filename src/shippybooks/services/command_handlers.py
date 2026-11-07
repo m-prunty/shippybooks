@@ -13,7 +13,7 @@ from ..domain import (
     OrderStatusChanged,
     UpdateBookStock,
 )
-from ..events import EventBus
+from ..events import EventBus, StockAlert
 
 
 class BookRepository:
@@ -25,6 +25,8 @@ class BookRepository:
 
     def get(self, id: str) -> Book:
         """Retrieve a book by its ID."""
+        print(self._books)
+        print(id)
         return self._books[id]
 
     def save(self, book: Book) -> None:
@@ -93,6 +95,8 @@ class CommandHandler:
         book.update_stock(cmd.quantity)
         self.book_repo.save(book)
         self.event_bus.publish(BookUpdated(book=book))
+        if book.stock < 5:
+            self.event_bus.publish(StockAlert(book_id=book.id, current_stock=book.stock))
 
     def _create_order(self, cmd: CreateOrder) -> None:
         """Create a new order, update book stocks, and publish events."""
@@ -101,6 +105,7 @@ class CommandHandler:
         for item in cmd.items:
             book = self.book_repo.get(item.book_id)
             order.add_item(book, item.quantity)
+            book.update_stock(-item.quantity)
             self.book_repo.save(book)
             self.event_bus.publish(BookUpdated(book=book))
 
