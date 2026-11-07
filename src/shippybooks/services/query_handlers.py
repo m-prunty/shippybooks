@@ -5,9 +5,7 @@ from .command_handlers import BookRepository, OrderRepository
 
 
 class QueryHandler:
-    def __init__(
-        self, book_repo: BookRepository, order_repo: OrderRepository
-    ) -> None:
+    def __init__(self, book_repo: BookRepository, order_repo: OrderRepository) -> None:
         self.book_repo = book_repo
         self.order_repo = order_repo
 

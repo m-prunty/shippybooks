@@ -4,8 +4,8 @@ from .query_handlers import QueryHandler
 __all__ = []
 
 __all__ += [
-    "CommandHandler",
     "BookRepository",
+    "CommandHandler",
     "OrderRepository",
 ]
 

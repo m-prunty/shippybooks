@@ -6,7 +6,6 @@ from .models import Book, Order, OrderStatus
 class DomainEvent(BaseModel):
     """Base class for domain events."""
 
-    pass
 
 
 class BookCreated(DomainEvent):

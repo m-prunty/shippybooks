@@ -1,6 +1,6 @@
 """Notification system for the bookstore application."""
 
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
@@ -62,9 +62,7 @@ class OrderConfirmation(Notification):
         """Convert the order confirmation notification to an event dict."""
         return {
             "kind": "order_confirmation",
-            "message": Message.ORDER_CONFIRMATION.format(
-                self.order_id, self.total
-            ),
+            "message": Message.ORDER_CONFIRMATION.format(self.order_id, self.total),
             "order_id": self.order_id,
         }
 
@@ -80,13 +78,10 @@ class StockAlert(Notification):
         """Convert the stock alert notification to an event dictionary."""
         return {
             "kind": "stock_alert",
-            "message": Message.STOCK_ALERT.format(
-                self.book_id, self.current_stock
-            ),
+            "message": Message.STOCK_ALERT.format(self.book_id, self.current_stock),
             "book_id": self.book_id,
             "current_stock": self.current_stock,
         }
-
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,9 +129,7 @@ class NotificationDispatcher:
 
     def on_book_created(self, e: BookCreated) -> None:
         self.handler.dispatch(
-            BookNotification(
-                book_id=e.book.id, status="created", stock=e.book.stock
-            )
+            BookNotification(book_id=e.book.id, status="created", stock=e.book.stock)
         )
 
     def on_book_updated(self, e: BookUpdated) -> None:

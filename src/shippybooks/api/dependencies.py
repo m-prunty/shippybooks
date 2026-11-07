@@ -38,6 +38,4 @@ def get_notification_store(request: Request) -> NotificationStore:
 
 CmdHandlerDep = Annotated[CommandHandler, Depends(get_cmd_handler)]
 QueryHandlerDep = Annotated[QueryHandler, Depends(get_query_handler)]
-NotificationStoreDep = Annotated[
-    NotificationStore, Depends(get_notification_store)
-]
+NotificationStoreDep = Annotated[NotificationStore, Depends(get_notification_store)]

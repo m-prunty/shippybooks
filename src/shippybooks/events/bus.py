@@ -8,9 +8,7 @@ class EventBus:
 
     def __init__(self) -> None:
         """Initialize the event bus with an empty subscriber dictionary."""
-        self._subscribers: dict[
-            type[DomainEvent], list[Callable[..., None]]
-        ] = {}
+        self._subscribers: dict[type[DomainEvent], list[Callable[..., None]]] = {}
 
     def subscribe(
         self, event_type: type[DomainEvent], handler: Callable[..., None]

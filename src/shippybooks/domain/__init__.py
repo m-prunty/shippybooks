@@ -29,8 +29,8 @@ from .queries import (
 __all__ = []
 
 __all__ += [
-    "Command",
     "ChangeOrderStatus",
+    "Command",
     "CreateBook",
     "CreateOrder",
     "UpdateBookStock",

@@ -1,8 +1,11 @@
-from . import Base 
-from domain import Book, Order, OrderItem, OrderStatus
-from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
+from ..domain import Book, Order, OrderItem, OrderStatus
+from . import Base
+
 
 class BookORM(Base):
     """Book ORM model."""
@@ -25,6 +28,7 @@ class BookORM(Base):
             stock=self.stock,
         )
 
+
 class OrderItemORM(Base):
     """Order item ORM model."""
 
@@ -41,6 +45,7 @@ class OrderItemORM(Base):
             book_id=self.book_id,
             quantity=self.quantity,
         )
+
 
 class OrderORM(Base):
     """Order ORM model."""
@@ -65,4 +70,3 @@ class OrderORM(Base):
             status=OrderStatus(self.status),
             total=self.total,
         )
-

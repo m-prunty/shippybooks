@@ -7,11 +7,11 @@ from .dependencies import (
 from .endpoints import books_router, notifications_router, orders_router
 
 __all__ = [
-    "books_router",
-    "orders_router",
-    "notifications_router",
-    "CmdHandlerDep",
-    "QueryHandlerDep",
-    "NotificationStoreDep",
     "AppState",
+    "CmdHandlerDep",
+    "NotificationStoreDep",
+    "QueryHandlerDep",
+    "books_router",
+    "notifications_router",
+    "orders_router",
 ]

@@ -8,7 +8,6 @@ from .models import OrderItem, OrderStatus
 class Command(BaseModel):
     """Base class for commands."""
 
-    pass
 
 
 class CreateBook(Command):

@@ -51,9 +51,7 @@ def change_status(
     """Change the status of an existing order."""
     try:
         cmd_handler.handle(
-            ChangeOrderStatus(
-                id=order_id, new_status=OrderStatus(request.status)
-            )
+            ChangeOrderStatus(id=order_id, new_status=OrderStatus(request.status))
         )
     except ValueError as e:
         raise HTTPException(400, "Invalid status:" + str(e)) from e

@@ -96,7 +96,9 @@ class CommandHandler:
         self.book_repo.save(book)
         self.event_bus.publish(BookUpdated(book=book))
         if book.stock < 5:
-            self.event_bus.publish(StockAlert(book_id=book.id, current_stock=book.stock))
+            self.event_bus.publish(
+                StockAlert(book_id=book.id, current_stock=book.stock)
+            )
 
     def _create_order(self, cmd: CreateOrder) -> None:
         """Create a new order, update book stocks, and publish events."""
