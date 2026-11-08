@@ -1,19 +1,12 @@
-from dataclasses import dataclass
 from typing import Annotated, cast
 
 from fastapi import Depends, Request
 
+from ..bootstrap import AppState
 from ..events import NotificationStore
 from ..services import CommandHandler, QueryHandler
 
-
-@dataclass(frozen=True, slots=True)
-class AppState:
-    """Typed view of the objects attached to `app.state` at startup."""
-
-    cmd_handler: CommandHandler
-    query_handler: QueryHandler
-    notification_store: NotificationStore
+# settings: Settings
 
 
 def get_app_state(request: Request) -> AppState:
