@@ -28,6 +28,13 @@ class BookORM(Base):
             stock=self.stock,
         )
 
+    def update_from_domain(self, book: Book) -> None:
+        """Update ORM model from domain model."""
+        self.title = book.title
+        self.author = book.author
+        self.price = book.price
+        self.stock = book.stock
+
 
 class OrderItemORM(Base):
     """Order item ORM model."""
