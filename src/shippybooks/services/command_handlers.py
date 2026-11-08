@@ -14,48 +14,7 @@ from ..domain import (
     UpdateBookStock,
 )
 from ..events import EventBus, StockAlert
-
-
-class BookRepository:
-    """Repository for managing Book aggregates."""
-
-    def __init__(self) -> None:
-        """Initialize the repository with an empty dictionary."""
-        self._books: dict[str, Book] = {}
-
-    def get(self, id: str) -> Book:
-        """Retrieve a book by its ID."""
-        print(self._books)
-        print(id)
-        return self._books[id]
-
-    def save(self, book: Book) -> None:
-        """Save or update a book in the repository."""
-        self._books[book.id] = book
-
-    def all(self) -> list[Book]:
-        """Return a list of all books in the repository."""
-        return list(self._books.values())
-
-
-class OrderRepository:
-    """Repository for managing Order aggregates."""
-
-    def __init__(self) -> None:
-        """Initialize the repository with an empty dictionary."""
-        self._orders: dict[str, Order] = {}
-
-    def get(self, id: str) -> Order:
-        """Retrieve an order by its ID."""
-        return self._orders[id]
-
-    def save(self, order: Order) -> None:
-        """Save or update an order in the repository."""
-        self._orders[order.id] = order
-
-    def all(self) -> list[Order]:
-        """Return a list of all orders in the repository."""
-        return list(self._orders.values())
+from .repos import BookRepository, OrderRepository
 
 
 class CommandHandler:
