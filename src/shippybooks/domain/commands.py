@@ -1,6 +1,6 @@
 """Commands for the bookstore application."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from .models import OrderItem, OrderStatus
 
@@ -8,6 +8,7 @@ from .models import OrderItem, OrderStatus
 class Command(BaseModel):
     """Base class for commands."""
 
+    model_config = ConfigDict(frozen=True)
 
 
 class CreateBook(Command):

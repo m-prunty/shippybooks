@@ -1,26 +1,21 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, ConfigDict
 
 
-@dataclass
-class Query:
-    pass
+class Query(BaseModel):
+    model_config = ConfigDict(frozen=True)
 
 
-@dataclass
 class GetBook(Query):
     id: str
 
 
-@dataclass
 class ListBooks(Query):
     pass
 
 
-@dataclass
 class GetOrder(Query):
     id: str
 
 
-@dataclass
 class ListOrders(Query):
     pass
