@@ -6,8 +6,6 @@ from ..bootstrap import AppState
 from ..events import NotificationStore
 from ..services import CommandHandler, QueryHandler
 
-# settings: Settings
-
 
 def get_app_state(request: Request) -> AppState:
     """Return the typed application state for the current request."""
