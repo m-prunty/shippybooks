@@ -9,10 +9,11 @@ from ..settings import settings
 class BookRepository:
     """Repository for managing Book aggregates."""
 
-    def __init__(self, session: Session = None) -> None:
+    def __init__(self, session: Session | None = None) -> None:
         """Initialize the repository with an empty dictionary."""
         self._books: dict[str, Book] = {}
-        if session:
+        self.persistent_memory = False
+        if session is not None:
             self.persistent_memory = settings.persistent_memory
             self.session = session
 
@@ -64,7 +65,8 @@ class OrderRepository:
     def __init__(self, session: Session | None = None) -> None:
         """Initialize the repository with an empty dictionary."""
         self._orders: dict[str, Order] = {}
-        if session:
+        self.persistent_memory = False
+        if session is not None:
             self.persistent_memory = settings.persistent_memory
             self.session = session
 
