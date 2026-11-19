@@ -484,11 +484,11 @@ QueryHandler.handle()"]:::query
     Repos -->|SQLAlchemy Session| ORM
     ORM -->|bind| Session
 
-    CmdHandler -->|publish(event)| Bus
-    Bus -->|on_*()| Disp
+    CmdHandler -->|publish| Bus
+    Bus -->|on_*| Disp
     Disp -->|build Notification| Notifs
-    Notifs -->|dispatch()| Handler
-    Handler -->|append()| Store
+    Notifs -->|dispatch| Handler
+    Handler -->|append| Store
 
     QH --> Queries
     QH -->|get / all| Repos
