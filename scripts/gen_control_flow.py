@@ -191,10 +191,24 @@ def node_id(text: str) -> str:
 def escape_mmd_label(label: str) -> str:
     """Escape Mermaid special characters in edge/node labels.
 
-    Curly braces are interpreted as diamond-shape syntax in edge labels,
-    so they must be HTML-entity-escaped.
+    Curly braces are interpreted as diamond-shape syntax, parentheses as
+    subroutine syntax, and square brackets as circle/stadium syntax in
+    edge labels, so they must be HTML-entity-escaped.
     """
-    return label.replace("{", "&#123;").replace("}", "&#125;")
+    return (
+        label.replace("{", "&#123;")
+        .replace("}", "&#125;")
+        .replace("(", "&#40;")
+        .replace(")", "&#41;")
+        .replace("[", "&#91;")
+        .replace("]", "&#93;")
+    )
+
+
+def edge(src: str, label: str, dst: str, style: str = "-->") -> str:
+    """Build an edge line with the label Mermaid-escaped."""
+    safe_label = escape_mmd_label(label)
+    return f"    {src} {style}|{safe_label}| {dst}"
 
 
 def emit(index: SourceIndex) -> str:
@@ -294,8 +308,7 @@ def emit(index: SourceIndex) -> str:
     lines.append("    %% Runtime request flow")
     for r in index.routes:
         nid = node_id(r["func"])
-        safe_path = escape_mmd_label(r["path"])
-        lines.append(f'    Client -->|{r["method"]} {safe_path}| {nid}')
+        lines.append(edge("Client", f'{r["method"]} {r["path"]}', nid))
 
     lines.append("")
     lines.append("    %% Endpoint -> dependency wiring")
@@ -311,11 +324,11 @@ def emit(index: SourceIndex) -> str:
                 break
 
     # Deps -> handlers
-    lines.append("    Deps -->|CmdHandlerDep| CommandHandler.handle")
-    lines.append("    Deps -->|QueryHandlerDep| QueryHandler.handle")
+    lines.append(edge("Deps", "CmdHandlerDep", "CommandHandler.handle"))
+    lines.append(edge("Deps", "QueryHandlerDep", "QueryHandler.handle"))
 
     # Bootstrap wiring
-    lines.append("    Main -->|build_app_state()| Bootstrap")
+    lines.append(edge("Main", "build_app_state()", "Bootstrap"))
     lines.append("    Bootstrap -.->|wire| CommandHandler.handle")
     lines.append("    Bootstrap -.->|wire| QueryHandler.handle")
     lines.append("    Bootstrap -.->|wire| Store")
@@ -323,7 +336,7 @@ def emit(index: SourceIndex) -> str:
     # ---- Command handler flow ----
     lines.append("")
     lines.append("    %% Command side")
-    lines.append("    CommandHandler.handle -->|isinstance dispatch [inferred]| DC")
+    lines.append(edge("CommandHandler.handle", "isinstance dispatch [inferred]", "DC"))
     lines.append("    CommandHandler.handle -->|mutate| DM")
     lines.append("    CommandHandler.handle -->|save / get| Repos")
 
@@ -331,7 +344,7 @@ def emit(index: SourceIndex) -> str:
     lines.append("")
     lines.append("    %% Query side")
     lines.append("    QueryHandler.handle -->|get / all| Repos")
-    lines.append("    QueryHandler.handle -->|to_domain()| DM")
+    lines.append(edge("QueryHandler.handle", "to_domain()", "DM"))
 
     # ---- Repos -> ORM ----
     lines.append("")
@@ -342,15 +355,22 @@ def emit(index: SourceIndex) -> str:
     # ---- Event bus flow ----
     lines.append("")
     lines.append("    %% Event-driven notifications")
-    lines.append("    CommandHandler.handle -->|publish(event) [inferred]| EventBus.publish")
-    lines.append("    EventBus.publish -->|subscribe match [inferred]| NotificationDispatcher.on_*")
+    lines.append(edge("CommandHandler.handle", "publish(event) [inferred]", "EventBus.publish"))
+    lines.append(edge("EventBus.publish", "subscribe match [inferred]", "NotificationDispatcher.on_*"))
     lines.append("    NotificationDispatcher.on_* -->|build Notification| NH")
-    lines.append("    NH -->|append()| Store")
+    lines.append(edge("NH", "append()", "Store"))
 
     # ---- SSE stream back to client ----
     lines.append("")
     lines.append("    %% SSE stream back to client")
-    lines.append('    Store -.->|SSE stream: GET /api/v1/notifications/stream [inferred]| Client')
+    lines.append(
+        edge(
+            "Store",
+            "SSE stream: GET /api/v1/notifications/stream [inferred]",
+            "Client",
+            style="-.->",
+        )
+    )
 
     lines.append("")
     return "\n".join(lines) + "\n"

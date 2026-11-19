@@ -93,30 +93,30 @@ flowchart TD
     %% Endpoint -> dependency wiring
     Deps -->|CmdHandlerDep| CommandHandler.handle
     Deps -->|QueryHandlerDep| QueryHandler.handle
-    Main -->|build_app_state()| Bootstrap
+    Main -->|build_app_state&#40;&#41;| Bootstrap
     Bootstrap -.->|wire| CommandHandler.handle
     Bootstrap -.->|wire| QueryHandler.handle
     Bootstrap -.->|wire| Store
 
     %% Command side
-    CommandHandler.handle -->|isinstance dispatch [inferred]| DC
+    CommandHandler.handle -->|isinstance dispatch &#91;inferred&#93;| DC
     CommandHandler.handle -->|mutate| DM
     CommandHandler.handle -->|save / get| Repos
 
     %% Query side
     QueryHandler.handle -->|get / all| Repos
-    QueryHandler.handle -->|to_domain()| DM
+    QueryHandler.handle -->|to_domain&#40;&#41;| DM
 
     %% Persistence
     Repos -->|SQLAlchemy Session| ORM
     ORM -->|bind| Session
 
     %% Event-driven notifications
-    CommandHandler.handle -->|publish(event) [inferred]| EventBus.publish
-    EventBus.publish -->|subscribe match [inferred]| NotificationDispatcher.on_*
+    CommandHandler.handle -->|publish&#40;event&#41; &#91;inferred&#93;| EventBus.publish
+    EventBus.publish -->|subscribe match &#91;inferred&#93;| NotificationDispatcher.on_*
     NotificationDispatcher.on_* -->|build Notification| NH
-    NH -->|append()| Store
+    NH -->|append&#40;&#41;| Store
 
     %% SSE stream back to client
-    Store -.->|SSE stream: GET /api/v1/notifications/stream [inferred]| Client
+    Store -.->|SSE stream: GET /api/v1/notifications/stream &#91;inferred&#93;| Client
 
