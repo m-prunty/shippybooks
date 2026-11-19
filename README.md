@@ -382,25 +382,51 @@ The control flow diagram shows the write path (commands), query path (reads), he
 
 ```mermaid
 flowchart TD
-    %% ----------------------------------------------------------------
-    %% Control flow diagram for shippybooks
-    %% Mirrors diagrams/control-flow.dot
-    %% ----------------------------------------------------------------
+    %% Auto-generated control flow diagram
+    %% Source: scripts/gen_control_flow.py
+    %% Edges marked [inferred] are not directly observable from AST
+
     classDef default fill:#e8f0fe,stroke:#1d4ed8,stroke-width:1px
-    classDef command fill:#fef2f2,stroke:#ef4444,stroke-width:1px
+    classDef endpoint fill:#f0f9ff,stroke:#0284c7,stroke-width:1px
+    classDef handler fill:#fef2f2,stroke:#ef4444,stroke-width:1px
     classDef query fill:#f0f9ff,stroke:#0284c7,stroke-width:1px
-    classDef db fill:#f0fdf4,stroke:#16a34a,stroke-width:1px
-    classDef event fill:#fffbeb,stroke:#d97706,stroke-width:1px
+    classDef repo fill:#f0fdf4,stroke:#16a34a,stroke-width:1px
+    classDef bus fill:#fffbeb,stroke:#d97706,stroke-width:1px
+    classDef db fill:#e0f2fe,stroke:#0369a1,stroke-width:1px
 
     Client(("HTTP client"))
 
     subgraph API ["FastAPI HTTP layer"]
-        Endpoints["api/endpoints/
-books.py · orders.py
-notifications.py · health.py"]
-        Deps["api/dependencies.py
-Depends wiring"]
+        create_book["POST /books/
+create_book"]:::endpoint
+        update_stock["POST /books/{book_id}/stock/
+update_stock"]:::endpoint
+        get_book["GET /books/{book_id}
+get_book"]:::endpoint
+        list_books["GET /books/
+list_books"]:::endpoint
+        health_live["GET /health/live
+health_live"]:::endpoint
+        health_ready["GET /health/ready
+health_ready"]:::endpoint
+        health["GET /health
+health"]:::endpoint
+        notification_stream["GET /notifications/stream
+notification_stream"]:::endpoint
+        create_order["POST /orders/
+create_order"]:::endpoint
+        change_status["POST /orders/{order_id}/status/
+change_status"]:::endpoint
+        get_order["GET /orders/{order_id}
+get_order"]:::endpoint
+        list_orders["GET /orders/
+list_orders"]:::endpoint
+        _create_tables["ON_EVENT startup
+_create_tables"]:::endpoint
     end
+
+    Deps["api/dependencies.py
+Depends wiring"]
 
     Main["main.py
 create_app()"]
@@ -408,17 +434,35 @@ create_app()"]
 build_app_state()"]
 
     subgraph Command ["Command side (writes)"]
-        CmdHandler["services/command_handlers.py
-CommandHandler.handle()"]:::command
-        Commands["domain/commands.py"]:::command
-        Aggregates["domain/models.py
-Book · Order · OrderItem"]:::command
+        CommandHandler___init__["CommandHandler.__init__"]:::handler
+        CommandHandler_handle["CommandHandler.handle"]:::handler
+        CommandHandler__create_book["CommandHandler._create_book"]:::handler
+        CommandHandler__update_stock["CommandHandler._update_stock"]:::handler
+        CommandHandler__create_order["CommandHandler._create_order"]:::handler
+        CommandHandler__change_status["CommandHandler._change_status"]:::handler
     end
 
-    BookRepo["services/repos.py
-BookRepository"]
-    OrderRepo["services/repos.py
-OrderRepository"]
+    subgraph Query ["Query side (reads)"]
+        QueryHandler___init__["QueryHandler.__init__"]:::query
+        QueryHandler_handle["QueryHandler.handle"]:::query
+    end
+
+    Repos["services/repos.py
+BookRepository · OrderRepository"]:::repo
+
+    subgraph Events ["Event-driven notifications"]
+        style Events fill:#fffbeb,stroke:#d97706,stroke-width:1px
+        EventBus___init__["EventBus.__init__"]:::bus
+        EventBus_subscribe["EventBus.subscribe"]:::bus
+        EventBus_publish["EventBus.publish"]:::bus
+        NotificationDispatcher___init__["NotificationDispatcher.__init__"]:::bus
+        NotificationDispatcher_on_book_created["NotificationDispatcher.on_book_created"]:::bus
+        NotificationDispatcher_on_book_updated["NotificationDispatcher.on_book_updated"]:::bus
+        NotificationDispatcher_on_order_created["NotificationDispatcher.on_order_created"]:::bus
+        NotificationDispatcher_on_status_changed["NotificationDispatcher.on_status_changed"]:::bus
+    end
+
+    NH["NotificationHandler.dispatch()"]:::bus
 
     subgraph Persist ["Persistence"]
         ORM["db/models.py
@@ -428,55 +472,60 @@ engine · get_session()
 SQLite (data.db)"]:::db
     end
 
-    subgraph Events ["Event-driven notifications"]
-        style Events fill:#fffbeb,stroke:#d97706,stroke-width:1px
-        Bus["events/bus.py
-EventBus.publish()"]
-        Disp["events/notifications.py
-NotificationDispatcher"]
-        Notifs["events/notifications.py
-Notification types"]
-        Handler["NotificationHandler.dispatch()"]
-        Store["events/store.py
-NotificationStore.append()"]
-    end
+    Store[("events/store.py
+NotificationStore")]
 
-    subgraph Query ["Query side (reads)"]
-        QH["services/query_handlers.py
-QueryHandler.handle()"]:::query
-        Queries["domain/queries.py"]:::query
-    end
+    DM["domain/models.py
+Book · Order · OrderItem"]
+    DC["domain/commands.py
+Command hierarchy"]
+    DQ["domain/queries.py
+Query hierarchy"]
 
-    Client -->|POST / GET| Endpoints
-    Endpoints -->|Depends| Deps
-    Deps -->|CmdHandlerDep| CmdHandler
-    Deps -->|QueryHandlerDep| QH
-    Main -->|build_app_state| Bootstrap
-    Bootstrap -.->|wire| CmdHandler
-    Bootstrap -.->|wire| QH
+    %% Runtime request flow
+    Client -->|POST /books/| create_book
+    Client -->|POST /books/{book_id}/stock/| update_stock
+    Client -->|GET /books/{book_id}| get_book
+    Client -->|GET /books/| list_books
+    Client -->|GET /health/live| health_live
+    Client -->|GET /health/ready| health_ready
+    Client -->|GET /health| health
+    Client -->|GET /notifications/stream| notification_stream
+    Client -->|POST /orders/| create_order
+    Client -->|POST /orders/{order_id}/status/| change_status
+    Client -->|GET /orders/{order_id}| get_order
+    Client -->|GET /orders/| list_orders
+    Client -->|ON_EVENT startup| _create_tables
+
+    %% Endpoint -> dependency wiring
+    Deps -->|CmdHandlerDep| CommandHandler.handle
+    Deps -->|QueryHandlerDep| QueryHandler.handle
+    Main -->|build_app_state()| Bootstrap
+    Bootstrap -.->|wire| CommandHandler.handle
+    Bootstrap -.->|wire| QueryHandler.handle
     Bootstrap -.->|wire| Store
 
-    CmdHandler -->|isinstance dispatch| Commands
-    CmdHandler -->|mutate| Aggregates
-    CmdHandler -->|save / get| BookRepo
-    CmdHandler -->|save / get| OrderRepo
-    BookRepo -->|SQLAlchemy Session| ORM
-    OrderRepo -->|SQLAlchemy Session| ORM
+    %% Command side
+    CommandHandler.handle -->|isinstance dispatch [inferred]| DC
+    CommandHandler.handle -->|mutate| DM
+    CommandHandler.handle -->|save / get| Repos
+
+    %% Query side
+    QueryHandler.handle -->|get / all| Repos
+    QueryHandler.handle -->|to_domain()| DM
+
+    %% Persistence
+    Repos -->|SQLAlchemy Session| ORM
     ORM -->|bind| Session
 
-    CmdHandler -->|publish| Bus
-    Bus -->|on_*| Disp
-    Disp -->|build Notification| Notifs
-    Notifs -->|dispatch| Handler
-    Handler -->|append| Store
+    %% Event-driven notifications
+    CommandHandler.handle -->|publish(event) [inferred]| EventBus.publish
+    EventBus.publish -->|subscribe match [inferred]| NotificationDispatcher.on_*
+    NotificationDispatcher.on_* -->|build Notification| NH
+    NH -->|append()| Store
 
-    QH --> Queries
-    QH -->|get / all| BookRepo
-    QH -->|get / all| OrderRepo
-    BookRepo -->|to_domain| Aggregates
-    OrderRepo -->|to_domain| Aggregates
-
-    Store -.->|SSE stream: GET /api/v1/notifications/stream| Endpoints
+    %% SSE stream back to client
+    Store -.->|SSE stream: GET /api/v1/notifications/stream [inferred]| Client
 ```
 
 View the rendered image: [diagrams/control-flow.png](diagrams/control-flow.png)
