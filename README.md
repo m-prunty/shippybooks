@@ -439,8 +439,10 @@ CommandHandler.handle()"]:::command
 Book · Order · OrderItem"]:::command
     end
 
-    Repos["services/repos.py
-BookRepository · OrderRepository"]
+    BookRepo["services/repos.py
+BookRepository"]
+    OrderRepo["services/repos.py
+OrderRepository"]
 
     subgraph Persist ["Persistence"]
         ORM["db/models.py
@@ -480,8 +482,10 @@ QueryHandler.handle()"]:::query
 
     CmdHandler -->|isinstance dispatch| Commands
     CmdHandler -->|mutate| Aggregates
-    CmdHandler -->|save / get| Repos
-    Repos -->|SQLAlchemy Session| ORM
+    CmdHandler -->|save / get| BookRepo
+    CmdHandler -->|save / get| OrderRepo
+    BookRepo -->|SQLAlchemy Session| ORM
+    OrderRepo -->|SQLAlchemy Session| ORM
     ORM -->|bind| Session
 
     CmdHandler -->|publish| Bus
@@ -491,8 +495,10 @@ QueryHandler.handle()"]:::query
     Handler -->|append| Store
 
     QH --> Queries
-    QH -->|get / all| Repos
-    Repos -->|to_domain| Aggregates
+    QH -->|get / all| BookRepo
+    QH -->|get / all| OrderRepo
+    BookRepo -->|to_domain| Aggregates
+    OrderRepo -->|to_domain| Aggregates
 
     Store -.->|SSE stream: GET /api/v1/notifications/stream| Endpoints
 ```

@@ -25,7 +25,8 @@ flowchart TD
         Aggregates["domain/models.py\nBook · Order · OrderItem"]:::command
     end
 
-    Repos["services/repos.py\nBookRepository · OrderRepository"]
+    BookRepo["services/repos.py\nBookRepository"]
+    OrderRepo["services/repos.py\nOrderRepository"]
 
     subgraph Persist ["Persistence"]
         ORM["db/models.py\nSQLAlchemy ORM models"]:::db
@@ -57,8 +58,10 @@ flowchart TD
 
     CmdHandler -->|isinstance dispatch| Commands
     CmdHandler -->|mutate| Aggregates
-    CmdHandler -->|save / get| Repos
-    Repos -->|SQLAlchemy Session| ORM
+    CmdHandler -->|save / get| BookRepo
+    CmdHandler -->|save / get| OrderRepo
+    BookRepo -->|SQLAlchemy Session| ORM
+    OrderRepo -->|SQLAlchemy Session| ORM
     ORM -->|bind| Session
 
     CmdHandler -->|publish| Bus
@@ -68,7 +71,9 @@ flowchart TD
     Handler -->|append| Store
 
     QH --> Queries
-    QH -->|get / all| Repos
-    Repos -->|to_domain| Aggregates
+    QH -->|get / all| BookRepo
+    QH -->|get / all| OrderRepo
+    BookRepo -->|to_domain| Aggregates
+    OrderRepo -->|to_domain| Aggregates
 
     Store -.->|SSE stream: GET /api/v1/notifications/stream| Endpoints

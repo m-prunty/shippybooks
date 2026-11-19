@@ -24,7 +24,8 @@ digraph "shippybooks control flow" {
     aggregates [label="domain/models.py\nBook · Order · OrderItem"];
   }
 
-  repos [label="services/repos.py\nBookRepository · OrderRepository"];
+  book_repo [label="services/repos.py\nBookRepository"];
+  order_repo [label="services/repos.py\nOrderRepository"];
 
   subgraph cluster_db {
     label="Persistence";
@@ -62,8 +63,10 @@ digraph "shippybooks control flow" {
 
   cmd_handler -> commands [label="isinstance dispatch"];
   cmd_handler -> aggregates [label="mutate"];
-  cmd_handler -> repos [label="save / get"];
-  repos -> orm [label="SQLAlchemy Session", style=dashed];
+  cmd_handler -> book_repo [label="save / get"];
+  cmd_handler -> order_repo [label="save / get"];
+  book_repo -> orm [label="SQLAlchemy Session", style=dashed];
+  order_repo -> orm [label="SQLAlchemy Session", style=dashed];
   orm -> session [label="bind", style=dashed];
 
   cmd_handler -> bus [label="publish(event)"];
@@ -73,8 +76,10 @@ digraph "shippybooks control flow" {
   handler -> store [label="append()"];
 
   qh -> queries;
-  qh -> repos [label="get / all"];
-  repos -> aggregates [label="to_domain()"];
+  qh -> book_repo [label="get / all"];
+  qh -> order_repo [label="get / all"];
+  book_repo -> aggregates [label="to_domain()"];
+  order_repo -> aggregates [label="to_domain()"];
 
   store -> endpoints [label="SSE stream\nGET /api/v1/notifications/stream", style=dashed, constraint=false, color="#d97706"];
 }
