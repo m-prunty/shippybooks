@@ -22,7 +22,7 @@ jobs:
       - name: Generate diagrams and refresh README
         run: |
           cd /opt/fastapi/shippybooks
-          make diagrams
+          make readme
 
       - name: Sync app files
         run: |

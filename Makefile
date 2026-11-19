@@ -27,10 +27,7 @@ lint:
 diagrams: | _diagrams_dir 
 	$(RUN) pyreverse $(SRC) -o mmd
 	$(RUN) pyreverse $(SRC) -o png 
-	mv classes.mmd $(DIR_DIAG)/classes.mmd
-	mv packages.mmd $(DIR_DIAG)/project.mmd
-	mv classes.png $(DIR_DIAG)/classes.png
-	mv packages.png $(DIR_DIAG)/project.png
+	mv *.mmd *.png $(DIR_DIAG)
 	$(RUN) python scripts/gen_control_flow.py
 
 readme: diagrams

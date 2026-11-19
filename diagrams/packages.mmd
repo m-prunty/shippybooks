@@ -1,0 +1,91 @@
+classDiagram
+  class shippybooks {
+  }
+  class api {
+  }
+  class dependencies {
+  }
+  class endpoints {
+  }
+  class books {
+  }
+  class health {
+  }
+  class notifications {
+  }
+  class orders {
+  }
+  class bootstrap {
+  }
+  class db {
+  }
+  class base {
+  }
+  class models {
+  }
+  class session {
+  }
+  class domain {
+  }
+  class commands {
+  }
+  class events {
+  }
+  class models {
+  }
+  class queries {
+  }
+  class events {
+  }
+  class bus {
+  }
+  class notifications {
+  }
+  class store {
+  }
+  class main {
+  }
+  class services {
+  }
+  class command_handlers {
+  }
+  class query_handlers {
+  }
+  class repos {
+  }
+  class settings {
+  }
+  api --> dependencies
+  api --> endpoints
+  endpoints --> books
+  endpoints --> health
+  endpoints --> notifications
+  endpoints --> orders
+  bootstrap --> db
+  bootstrap --> events
+  bootstrap --> events
+  bootstrap --> bus
+  bootstrap --> notifications
+  bootstrap --> services
+  bootstrap --> query_handlers
+  db --> base
+  db --> models
+  db --> session
+  session --> base
+  domain --> commands
+  domain --> models
+  domain --> queries
+  domain --> events
+  commands --> models
+  events --> models
+  events --> bus
+  events --> notifications
+  events --> store
+  store --> notifications
+  main --> api
+  main --> bootstrap
+  main --> db
+  services --> command_handlers
+  services --> query_handlers
+  command_handlers --> repos
+  query_handlers --> command_handlers
