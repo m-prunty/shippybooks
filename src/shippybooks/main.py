@@ -24,8 +24,10 @@ def create_app() -> FastAPI:
         allow_origins=[
             "https://mprunty.com",
             "https://www.mprunty.com",
-            "http://localhost:5173",
         ],
+        # Allow the Vite dev server whether it is opened via localhost or
+        # 127.0.0.1 (and on any port).
+        allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
