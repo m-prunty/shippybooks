@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "providers": {
+    "ollama": {
+      "name": "Ollama (local)",
+      "settings": {
+        "baseURL": "http://localhost:11434/v1"
+      }
+    }
+  },
+  "model": "ollama/hf.co/ccore/Qwen3.5-4B-3D-Coder:Q4_K_M"
+}
