@@ -47,10 +47,10 @@ flowchart TD
     end
 
     Client -->|POST / GET| Endpoints
-    Endpoints -->|Depends()| Deps
+    Endpoints -->|Depends| Deps
     Deps -->|CmdHandlerDep| CmdHandler
     Deps -->|QueryHandlerDep| QH
-    Main -->|build_app_state()| Bootstrap
+    Main -->|build_app_state| Bootstrap
     Bootstrap -.->|wire| CmdHandler
     Bootstrap -.->|wire| QH
     Bootstrap -.->|wire| Store
@@ -69,6 +69,6 @@ flowchart TD
 
     QH --> Queries
     QH -->|get / all| Repos
-    Repos -->|to_domain()| Aggregates
+    Repos -->|to_domain| Aggregates
 
-    Store -.->|SSE stream:\nGET /api/v1/notifications/stream| Endpoints
+    Store -.->|SSE stream: GET /api/v1/notifications/stream| Endpoints

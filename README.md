@@ -12,7 +12,7 @@ See [ABOUT.md](ABOUT.md) for the project overview, architecture, and motivation.
 
 ### Class diagram
 
-The class diagram shows the domain model, commands, queries, events, repositories, handlers, notification layer, and application wiring. Generated from `src/shippybooks` with `pyreverse` (Pylint); source at `diagrams/classes.mmd`.
+The class diagram shows the domain model, commands, queries, events, repositories, handlers, notification layer, and application wiring. Generated from `src/shippybooks` with `pyreverse` (Pylint). Source at `diagrams/classes.mmd`.
 
 ```mermaid
 classDiagram
@@ -308,45 +308,71 @@ graph TD
         direction TB
 
         subgraph domain ["domain/"]
-            models["models.py\nBook, Order, OrderItem,\nOrderStatus"]
-            commands["commands.py\nCommand hierarchy"]
-            queries["queries.py\nQuery hierarchy"]
-            devents["events.py\nDomainEvent hierarchy"]
+            models["models.py
+Book, Order, OrderItem,
+OrderStatus"]
+            commands["commands.py
+Command hierarchy"]
+            queries["queries.py
+Query hierarchy"]
+            devents["events.py
+DomainEvent hierarchy"]
         end
 
         subgraph services ["services/"]
-            ch["command_handlers.py\nCommandHandler"]
-            qh["query_handlers.py\nQueryHandler"]
-            repos["repos.py\nBookRepository, OrderRepository"]
+            ch["command_handlers.py
+CommandHandler"]
+            qh["query_handlers.py
+QueryHandler"]
+            repos["repos.py
+BookRepository, OrderRepository"]
         end
 
         subgraph events ["events/"]
-            bus["bus.py\nEventBus"]
-            notif["notifications.py\nNotificationDispatcher,\nNotification types"]
-            store["store.py\nNotificationStore"]
+            bus["bus.py
+EventBus"]
+            notif["notifications.py
+NotificationDispatcher,
+Notification types"]
+            store["store.py
+NotificationStore"]
         end
 
         subgraph api ["api/"]
-            ep["endpoints/\nbooks.py · orders.py\nnotifications.py · health.py"]
-            deps["dependencies.py\nFastAPI Depends wiring"]
+            ep["endpoints/
+books.py · orders.py
+notifications.py · health.py"]
+            deps["dependencies.py
+FastAPI Depends wiring"]
         end
 
         subgraph db ["db/"]
-            orm["models.py\nSQLAlchemy ORM models"]
-            sess["session.py\nengine, get_session()"]
-            base["base.py\nBase, make_engine()"]
+            orm["models.py
+SQLAlchemy ORM models"]
+            sess["session.py
+engine, get_session()"]
+            base["base.py
+Base, make_engine()"]
         end
 
-        bootstrap["bootstrap.py\nbuild_app_state()"]
-        main["main.py\ncreate_app() · uvicorn entry"]
-        settings["settings.py\nSettings\n(pydantic-settings)"]
+        bootstrap["bootstrap.py
+build_app_state()"]
+        main["main.py
+create_app() · uvicorn entry"]
+        settings["settings.py
+Settings
+(pydantic-settings)"]
     end
 
     subgraph external ["External dependencies"]
-        fastapi["FastAPI\nweb framework"]
-        sqlalchemy["SQLAlchemy\nORM / SQLite"]
-        pydantic["Pydantic\nsettings & models"]
-        uvicorn["uvicorn\nASGI server"]
+        fastapi["FastAPI
+web framework"]
+        sqlalchemy["SQLAlchemy
+ORM / SQLite"]
+        pydantic["Pydantic
+settings & models"]
+        uvicorn["uvicorn
+ASGI server"]
     end
 
     %% Runtime request flow
@@ -393,45 +419,61 @@ flowchart TD
     Client(("HTTP client"))
 
     subgraph API ["FastAPI HTTP layer"]
-        Endpoints["api/endpoints/\nbooks.py · orders.py\nnotifications.py · health.py"]
-        Deps["api/dependencies.py\nDepends wiring"]
+        Endpoints["api/endpoints/
+books.py · orders.py
+notifications.py · health.py"]
+        Deps["api/dependencies.py
+Depends wiring"]
     end
 
-    Main["main.py\ncreate_app()"]
-    Bootstrap["bootstrap.py\nbuild_app_state()"]
+    Main["main.py
+create_app()"]
+    Bootstrap["bootstrap.py
+build_app_state()"]
 
     subgraph Command ["Command side (writes)"]
-        CmdHandler["services/command_handlers.py\nCommandHandler.handle()"]:::command
+        CmdHandler["services/command_handlers.py
+CommandHandler.handle()"]:::command
         Commands["domain/commands.py"]:::command
-        Aggregates["domain/models.py\nBook · Order · OrderItem"]:::command
+        Aggregates["domain/models.py
+Book · Order · OrderItem"]:::command
     end
 
-    Repos["services/repos.py\nBookRepository · OrderRepository"]
+    Repos["services/repos.py
+BookRepository · OrderRepository"]
 
     subgraph Persist ["Persistence"]
-        ORM["db/models.py\nSQLAlchemy ORM models"]:::db
-        Session["db/session.py\nengine · get_session()\nSQLite (data.db)"]:::db
+        ORM["db/models.py
+SQLAlchemy ORM models"]:::db
+        Session["db/session.py
+engine · get_session()
+SQLite (data.db)"]:::db
     end
 
     subgraph Events ["Event-driven notifications"]
         style Events fill:#fffbeb,stroke:#d97706,stroke-width:1px
-        Bus["events/bus.py\nEventBus.publish()"]
-        Disp["events/notifications.py\nNotificationDispatcher"]
-        Notifs["events/notifications.py\nNotification types"]
+        Bus["events/bus.py
+EventBus.publish()"]
+        Disp["events/notifications.py
+NotificationDispatcher"]
+        Notifs["events/notifications.py
+Notification types"]
         Handler["NotificationHandler.dispatch()"]
-        Store["events/store.py\nNotificationStore.append()"]
+        Store["events/store.py
+NotificationStore.append()"]
     end
 
     subgraph Query ["Query side (reads)"]
-        QH["services/query_handlers.py\nQueryHandler.handle()"]:::query
+        QH["services/query_handlers.py
+QueryHandler.handle()"]:::query
         Queries["domain/queries.py"]:::query
     end
 
     Client -->|POST / GET| Endpoints
-    Endpoints -->|Depends()| Deps
+    Endpoints -->|Depends| Deps
     Deps -->|CmdHandlerDep| CmdHandler
     Deps -->|QueryHandlerDep| QH
-    Main -->|build_app_state()| Bootstrap
+    Main -->|build_app_state| Bootstrap
     Bootstrap -.->|wire| CmdHandler
     Bootstrap -.->|wire| QH
     Bootstrap -.->|wire| Store
@@ -450,9 +492,9 @@ flowchart TD
 
     QH --> Queries
     QH -->|get / all| Repos
-    Repos -->|to_domain()| Aggregates
+    Repos -->|to_domain| Aggregates
 
-    Store -.->|SSE stream:\nGET /api/v1/notifications/stream| Endpoints
+    Store -.->|SSE stream: GET /api/v1/notifications/stream| Endpoints
 ```
 
 View the rendered image: [diagrams/control-flow.png](diagrams/control-flow.png)
