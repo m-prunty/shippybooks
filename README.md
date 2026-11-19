@@ -1,3 +1,8 @@
+# shippybooks
+
+See [ABOUT.md](ABOUT.md) for the project overview, architecture, and motivation.
+
+## Reference material
 
 [Arjan Codes - CQRS YT](https://www.youtube.com/watch?v=Spp-uzXzzdE)
 [Arjan Codes - CQRS GH repo](https://github.com/ArjanCodes/examples/tree/main/2026/cqrs)
