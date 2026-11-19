@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Local runtime and editor artifacts
+*.db
+*.swp
+/null/
+
+# Generated repository snapshots
+/src/shippybooks/project_structre.json
