@@ -413,7 +413,8 @@ flowchart TD
         Session["db/session.py\nengine · get_session()\nSQLite (data.db)"]:::db
     end
 
-    subgraph Events ["Event-driven notifications"]:::event
+    subgraph Events ["Event-driven notifications"]
+        style Events fill:#fffbeb,stroke:#d97706,stroke-width:1px
         Bus["events/bus.py\nEventBus.publish()"]
         Disp["events/notifications.py\nNotificationDispatcher"]
         Notifs["events/notifications.py\nNotification types"]
