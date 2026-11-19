@@ -1,0 +1,73 @@
+flowchart TD
+    %% ----------------------------------------------------------------
+    %% Control flow diagram for shippybooks
+    %% Mirrors diagrams/control-flow.dot
+    %% ----------------------------------------------------------------
+    classDef default fill:#e8f0fe,stroke:#1d4ed8,stroke-width:1px
+    classDef command fill:#fef2f2,stroke:#ef4444,stroke-width:1px
+    classDef query fill:#f0f9ff,stroke:#0284c7,stroke-width:1px
+    classDef db fill:#f0fdf4,stroke:#16a34a,stroke-width:1px
+    classDef event fill:#fffbeb,stroke:#d97706,stroke-width:1px
+
+    Client(("HTTP client"))
+
+    subgraph API ["FastAPI HTTP layer"]
+        Endpoints["api/endpoints/\nbooks.py · orders.py\nnotifications.py · health.py"]
+        Deps["api/dependencies.py\nDepends wiring"]
+    end
+
+    Main["main.py\ncreate_app()"]
+    Bootstrap["bootstrap.py\nbuild_app_state()"]
+
+    subgraph Command ["Command side (writes)"]
+        CmdHandler["services/command_handlers.py\nCommandHandler.handle()"]:::command
+        Commands["domain/commands.py"]:::command
+        Aggregates["domain/models.py\nBook · Order · OrderItem"]:::command
+    end
+
+    Repos["services/repos.py\nBookRepository · OrderRepository"]
+
+    subgraph Persist ["Persistence"]
+        ORM["db/models.py\nSQLAlchemy ORM models"]:::db
+        Session["db/session.py\nengine · get_session()\nSQLite (data.db)"]:::db
+    end
+
+    subgraph Events ["Event-driven notifications"]:::event
+        Bus["events/bus.py\nEventBus.publish()"]
+        Disp["events/notifications.py\nNotificationDispatcher"]
+        Notifs["events/notifications.py\nNotification types"]
+        Handler["NotificationHandler.dispatch()"]
+        Store["events/store.py\nNotificationStore.append()"]
+    end
+
+    subgraph Query ["Query side (reads)"]
+        QH["services/query_handlers.py\nQueryHandler.handle()"]:::query
+        Queries["domain/queries.py"]:::query
+    end
+
+    Client -->|POST / GET| Endpoints
+    Endpoints -->|Depends()| Deps
+    Deps -->|CmdHandlerDep| CmdHandler
+    Deps -->|QueryHandlerDep| QH
+    Main -->|build_app_state()| Bootstrap
+    Bootstrap -.->|wire| CmdHandler
+    Bootstrap -.->|wire| QH
+    Bootstrap -.->|wire| Store
+
+    CmdHandler -->|isinstance dispatch| Commands
+    CmdHandler -->|mutate| Aggregates
+    CmdHandler -->|save / get| Repos
+    Repos -->|SQLAlchemy Session| ORM
+    ORM -->|bind| Session
+
+    CmdHandler -->|publish(event)| Bus
+    Bus -->|on_*()| Disp
+    Disp -->|build Notification| Notifs
+    Notifs -->|dispatch()| Handler
+    Handler -->|append()| Store
+
+    QH --> Queries
+    QH -->|get / all| Repos
+    Repos -->|to_domain()| Aggregates
+
+    Store -.->|SSE stream:\nGET /api/v1/notifications/stream| Endpoints

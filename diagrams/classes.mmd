@@ -1,0 +1,276 @@
+classDiagram
+    %% ----------------------------------------------------------------
+    %% Domain model (src/shippybooks/domain/models.py)
+    %% ----------------------------------------------------------------
+    class OrderStatus {
+        <<enumeration>>
+        PENDING
+        PROCESSING
+        SHIPPED
+        CANCELLED
+    }
+    class Book {
+        +id: str
+        +title: str
+        +author: str
+        +price: float
+        +stock: int
+        +update_stock(quantity: int): None
+    }
+    class OrderItem {
+        +book_id: str
+        +quantity: int
+    }
+    class Order {
+        +id: str
+        +items: list[OrderItem]
+        +timestamp: datetime
+        +last_updated: datetime
+        +status: OrderStatus
+        +total: float
+        +add_item(book: Book, quantity: int): None
+        +change_status(new_status: OrderStatus): None
+    }
+    Book "1" *-- "many" OrderItem : contains
+    Order "1" *-- "many" OrderItem : contains
+    Order ..> OrderStatus : status
+
+    %% ----------------------------------------------------------------
+    %% Commands (src/shippybooks/domain/commands.py)
+    %% ----------------------------------------------------------------
+    class Command {
+        <<frozen, abstract>>
+        model_config = ConfigDict(frozen=True)
+    }
+    class CreateBook {
+        +id: str
+        +title: str
+        +author: str
+        +price: float
+        +stock: int
+    }
+    class UpdateBookStock {
+        +id: str
+        +quantity: int
+    }
+    class CreateOrder {
+        +id: str
+        +items: list[OrderItem]
+    }
+    class ChangeOrderStatus {
+        +id: str
+        +new_status: OrderStatus
+    }
+    Command <|-- CreateBook
+    Command <|-- UpdateBookStock
+    Command <|-- CreateOrder
+    Command <|-- ChangeOrderStatus
+    CreateOrder ..> OrderItem : items
+
+    %% ----------------------------------------------------------------
+    %% Queries (src/shippybooks/domain/queries.py)
+    %% ----------------------------------------------------------------
+    class Query {
+        <<frozen, abstract>>
+    }
+    class GetBook {
+        +id: str
+    }
+    class ListBooks
+    class GetOrder {
+        +id: str
+    }
+    class ListOrders
+    Query <|-- GetBook
+    Query <|-- ListBooks
+    Query <|-- GetOrder
+    Query <|-- ListOrders
+
+    %% ----------------------------------------------------------------
+    %% Domain events (src/shippybooks/domain/events.py)
+    %% ----------------------------------------------------------------
+    class DomainEvent {
+        <<abstract>>
+    }
+    class BookCreated {
+        +book: Book
+    }
+    class BookUpdated {
+        +book: Book
+    }
+    class OrderCreated {
+        +order: Order
+    }
+    class OrderStatusChanged {
+        +order_id: str
+        +old_status: OrderStatus
+        +new_status: OrderStatus
+    }
+    DomainEvent <|-- BookCreated
+    DomainEvent <|-- BookUpdated
+    DomainEvent <|-- OrderCreated
+    DomainEvent <|-- OrderStatusChanged
+
+    %% ----------------------------------------------------------------
+    %% Command handler (src/shippybooks/services/command_handlers.py)
+    %% ----------------------------------------------------------------
+    class CommandHandler {
+        -event_bus: EventBus
+        -book_repo: BookRepository
+        -order_repo: OrderRepository
+        +handle(command: Command): None
+    }
+    CommandHandler --> EventBus : publishes events
+    CommandHandler --> BookRepository
+    CommandHandler --> OrderRepository
+    CommandHandler ..> CreateBook : handles
+    CommandHandler ..> UpdateBookStock : handles
+    CommandHandler ..> CreateOrder : handles
+    CommandHandler ..> ChangeOrderStatus : handles
+
+    %% ----------------------------------------------------------------
+    %% Query handler (src/shippybooks/services/query_handlers.py)
+    %% ----------------------------------------------------------------
+    class QueryHandler {
+        -book_repo: BookRepository
+        -order_repo: OrderRepository
+        +handle(query: Query): Any
+    }
+    QueryHandler --> BookRepository
+    QueryHandler --> OrderRepository
+
+    %% ----------------------------------------------------------------
+    %% Repositories (src/shippybooks/services/repos.py)
+    %% ----------------------------------------------------------------
+    class BookRepository {
+        -_books: dict[str, Book]
+        +get(id: str): Book
+        +save(book: Book): None
+        +all(): list[Book]
+    }
+    class OrderRepository {
+        -_orders: dict[str, Order]
+        +get(id: str): Order
+        +save(order: Order): None
+        +all(): list[Order]
+    }
+    BookRepository --> Book : manages
+    OrderRepository --> Order : manages
+    BookRepository ..> BookORM : persists via ORM (optional)
+    OrderRepository ..> OrderORM : persists via ORM (optional)
+
+    %% ----------------------------------------------------------------
+    %% ORM models (src/shippybooks/db/models.py)
+    %% ----------------------------------------------------------------
+    class BookORM {
+        +id: str (PK)
+        +title: str
+        +author: str
+        +price: float
+        +stock: int
+    }
+    class OrderORM {
+        +id: str (PK)
+        +timestamp: datetime
+        +status: str
+        +total: float
+        +items: list[OrderItemORM]
+    }
+    class OrderItemORM {
+        +id: int (PK)
+        +order_id: str (FK)
+        +book_id: str (FK)
+        +quantity: int
+    }
+    OrderORM "1" *-- "many" OrderItemORM : items
+
+    %% ----------------------------------------------------------------
+    %% Event bus (src/shippybooks/events/bus.py)
+    %% ----------------------------------------------------------------
+    class EventBus {
+        -_subscribers: dict[type[DomainEvent], list]
+        +subscribe(event_type, handler): None
+        +publish(event: DomainEvent): None
+    }
+    EventBus --> DomainEvent : subscribes to
+
+    %% ----------------------------------------------------------------
+    %% Notification layer (src/shippybooks/events/notifications.py)
+    %% ----------------------------------------------------------------
+    class Notification {
+        <<abstract, frozen>>
+        +to_event(): dict[str, Any]
+    }
+    class BookNotification {
+        +book_id: str
+        +status: str
+        +stock: int
+    }
+    class OrderConfirmation {
+        +order_id: str
+        +total: float
+    }
+    class StockAlert {
+        +book_id: str
+        +current_stock: int
+    }
+    class StatusUpdate {
+        +order_id: str
+        +new_status: OrderStatus
+    }
+    class Message {
+        <<StrEnum>>
+        BOOK_NOTIFICATION
+        ORDER_CONFIRMATION
+        STOCK_ALERT
+        STATUS_UPDATE
+    }
+    Notification <|-- BookNotification
+    Notification <|-- OrderConfirmation
+    Notification <|-- StockAlert
+    Notification <|-- StatusUpdate
+
+    class NotificationHandler {
+        -_handlers: dict
+        +register(notify_type, handler): None
+        +dispatch(notification: Notification): None
+    }
+    class NotificationDispatcher {
+        -handler: NotificationHandler
+        +on_book_created(e): None
+        +on_book_updated(e): None
+        +on_order_created(e): None
+        +on_status_changed(e): None
+    }
+    class NotificationStore {
+        -_events: list[dict]
+        +append(notification): None
+        +since(last_id: int): list[dict]
+    }
+    NotificationDispatcher --> NotificationHandler
+    NotificationDispatcher --> BookNotification
+    NotificationDispatcher --> StockAlert
+    NotificationDispatcher --> OrderConfirmation
+    NotificationDispatcher --> StatusUpdate
+    NotificationHandler --> NotificationStore : append
+    EventBus --> NotificationDispatcher : calls on_*()
+
+    %% ----------------------------------------------------------------
+    %% Application wiring (bootstrap.py, main.py, settings.py)
+    %% ----------------------------------------------------------------
+    class AppState {
+        +cmd_handler: CommandHandler
+        +query_handler: QueryHandler
+        +notification_store: NotificationStore
+    }
+    class settings {
+        +database_url: str
+        +environment: str
+        +persistent_memory: bool
+    }
+    class create_app {
+        +builds the FastAPI application
+    }
+    AppState --> CommandHandler
+    AppState --> QueryHandler
+    AppState --> NotificationStore

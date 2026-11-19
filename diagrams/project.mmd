@@ -1,0 +1,70 @@
+graph TD
+    %% ----------------------------------------------------------------
+    %% Project structure diagram for shippybooks
+    %% ----------------------------------------------------------------
+    subgraph shippybooks ["shippybooks package"]
+        direction TB
+
+        subgraph domain ["domain/"]
+            models["models.py\nBook, Order, OrderItem,\nOrderStatus"]
+            commands["commands.py\nCommand hierarchy"]
+            queries["queries.py\nQuery hierarchy"]
+            devents["events.py\nDomainEvent hierarchy"]
+        end
+
+        subgraph services ["services/"]
+            ch["command_handlers.py\nCommandHandler"]
+            qh["query_handlers.py\nQueryHandler"]
+            repos["repos.py\nBookRepository, OrderRepository"]
+        end
+
+        subgraph events ["events/"]
+            bus["bus.py\nEventBus"]
+            notif["notifications.py\nNotificationDispatcher,\nNotification types"]
+            store["store.py\nNotificationStore"]
+        end
+
+        subgraph api ["api/"]
+            ep["endpoints/\nbooks.py · orders.py\nnotifications.py · health.py"]
+            deps["dependencies.py\nFastAPI Depends wiring"]
+        end
+
+        subgraph db ["db/"]
+            orm["models.py\nSQLAlchemy ORM models"]
+            sess["session.py\nengine, get_session()"]
+            base["base.py\nBase, make_engine()"]
+        end
+
+        bootstrap["bootstrap.py\nbuild_app_state()"]
+        main["main.py\ncreate_app() · uvicorn entry"]
+        settings["settings.py\nSettings\n(pydantic-settings)"]
+    end
+
+    subgraph external ["External dependencies"]
+        fastapi["FastAPI\nweb framework"]
+        sqlalchemy["SQLAlchemy\nORM / SQLite"]
+        pydantic["Pydantic\nsettings & models"]
+        uvicorn["uvicorn\nASGI server"]
+    end
+
+    %% Runtime request flow
+    client[("HTTP client")] --> ep
+    ep --> deps
+    deps --> ch
+    deps --> qh
+    bootstrap --> ch
+    bootstrap --> qh
+    bootstrap --> store
+    main --> bootstrap
+    main --> settings
+
+    %% Command side
+    ch --> repos
+    ch --> bus
+    qh --> repos
+    repos --> orm
+    orm --> sess
+
+    %% Event-driven notifications
+    bus --> notif
+    notif --> store
