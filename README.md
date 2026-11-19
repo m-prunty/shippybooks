@@ -2,6 +2,12 @@
 
 See [ABOUT.md](ABOUT.md) for the project overview, architecture, and motivation.
 
+## Project documentation
+
+- [Architecture and API overview](ABOUT.md)
+- [Class, project, and control-flow diagrams](diagrams/README.md)
+- [Current implementation handoff](HANDOFF.md)
+
 ## Reference material
 
 [Arjan Codes - CQRS YT](https://www.youtube.com/watch?v=Spp-uzXzzdE)
