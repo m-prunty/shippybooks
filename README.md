@@ -16,281 +16,262 @@ The class diagram shows the domain model, commands, queries, events, repositorie
 
 ```mermaid
 classDiagram
-    %% ----------------------------------------------------------------
-    %% Domain model (src/shippybooks/domain/models.py)
-    %% ----------------------------------------------------------------
-    class OrderStatus {
-        <<enumeration>>
-        PENDING
-        PROCESSING
-        SHIPPED
-        CANCELLED
-    }
-    class Book {
-        +id: str
-        +title: str
-        +author: str
-        +price: float
-        +stock: int
-        +update_stock(quantity: int): None
-    }
-    class OrderItem {
-        +book_id: str
-        +quantity: int
-    }
-    class Order {
-        +id: str
-        +items: list[OrderItem]
-        +timestamp: datetime
-        +last_updated: datetime
-        +status: OrderStatus
-        +total: float
-        +add_item(book: Book, quantity: int): None
-        +change_status(new_status: OrderStatus): None
-    }
-    Book "1" *-- "many" OrderItem : contains
-    Order "1" *-- "many" OrderItem : contains
-    Order ..> OrderStatus : status
-
-    %% ----------------------------------------------------------------
-    %% Commands (src/shippybooks/domain/commands.py)
-    %% ----------------------------------------------------------------
-    class Command {
-        <<frozen, abstract>>
-        model_config = ConfigDict(frozen=True)
-    }
-    class CreateBook {
-        +id: str
-        +title: str
-        +author: str
-        +price: float
-        +stock: int
-    }
-    class UpdateBookStock {
-        +id: str
-        +quantity: int
-    }
-    class CreateOrder {
-        +id: str
-        +items: list[OrderItem]
-    }
-    class ChangeOrderStatus {
-        +id: str
-        +new_status: OrderStatus
-    }
-    Command <|-- CreateBook
-    Command <|-- UpdateBookStock
-    Command <|-- CreateOrder
-    Command <|-- ChangeOrderStatus
-    CreateOrder ..> OrderItem : items
-
-    %% ----------------------------------------------------------------
-    %% Queries (src/shippybooks/domain/queries.py)
-    %% ----------------------------------------------------------------
-    class Query {
-        <<frozen, abstract>>
-    }
-    class GetBook {
-        +id: str
-    }
-    class ListBooks
-    class GetOrder {
-        +id: str
-    }
-    class ListOrders
-    Query <|-- GetBook
-    Query <|-- ListBooks
-    Query <|-- GetOrder
-    Query <|-- ListOrders
-
-    %% ----------------------------------------------------------------
-    %% Domain events (src/shippybooks/domain/events.py)
-    %% ----------------------------------------------------------------
-    class DomainEvent {
-        <<abstract>>
-    }
-    class BookCreated {
-        +book: Book
-    }
-    class BookUpdated {
-        +book: Book
-    }
-    class OrderCreated {
-        +order: Order
-    }
-    class OrderStatusChanged {
-        +order_id: str
-        +old_status: OrderStatus
-        +new_status: OrderStatus
-    }
-    DomainEvent <|-- BookCreated
-    DomainEvent <|-- BookUpdated
-    DomainEvent <|-- OrderCreated
-    DomainEvent <|-- OrderStatusChanged
-
-    %% ----------------------------------------------------------------
-    %% Command handler (src/shippybooks/services/command_handlers.py)
-    %% ----------------------------------------------------------------
-    class CommandHandler {
-        -event_bus: EventBus
-        -book_repo: BookRepository
-        -order_repo: OrderRepository
-        +handle(command: Command): None
-    }
-    CommandHandler --> EventBus : publishes events
-    CommandHandler --> BookRepository
-    CommandHandler --> OrderRepository
-    CommandHandler ..> CreateBook : handles
-    CommandHandler ..> UpdateBookStock : handles
-    CommandHandler ..> CreateOrder : handles
-    CommandHandler ..> ChangeOrderStatus : handles
-
-    %% ----------------------------------------------------------------
-    %% Query handler (src/shippybooks/services/query_handlers.py)
-    %% ----------------------------------------------------------------
-    class QueryHandler {
-        -book_repo: BookRepository
-        -order_repo: OrderRepository
-        +handle(query: Query): Any
-    }
-    QueryHandler --> BookRepository
-    QueryHandler --> OrderRepository
-
-    %% ----------------------------------------------------------------
-    %% Repositories (src/shippybooks/services/repos.py)
-    %% ----------------------------------------------------------------
-    class BookRepository {
-        -_books: dict[str, Book]
-        +get(id: str): Book
-        +save(book: Book): None
-        +all(): list[Book]
-    }
-    class OrderRepository {
-        -_orders: dict[str, Order]
-        +get(id: str): Order
-        +save(order: Order): None
-        +all(): list[Order]
-    }
-    BookRepository --> Book : manages
-    OrderRepository --> Order : manages
-    BookRepository ..> BookORM : persists via ORM (optional)
-    OrderRepository ..> OrderORM : persists via ORM (optional)
-
-    %% ----------------------------------------------------------------
-    %% ORM models (src/shippybooks/db/models.py)
-    %% ----------------------------------------------------------------
-    class BookORM {
-        +id: str (PK)
-        +title: str
-        +author: str
-        +price: float
-        +stock: int
-    }
-    class OrderORM {
-        +id: str (PK)
-        +timestamp: datetime
-        +status: str
-        +total: float
-        +items: list[OrderItemORM]
-    }
-    class OrderItemORM {
-        +id: int (PK)
-        +order_id: str (FK)
-        +book_id: str (FK)
-        +quantity: int
-    }
-    OrderORM "1" *-- "many" OrderItemORM : items
-
-    %% ----------------------------------------------------------------
-    %% Event bus (src/shippybooks/events/bus.py)
-    %% ----------------------------------------------------------------
-    class EventBus {
-        -_subscribers: dict[type[DomainEvent], list]
-        +subscribe(event_type, handler): None
-        +publish(event: DomainEvent): None
-    }
-    EventBus --> DomainEvent : subscribes to
-
-    %% ----------------------------------------------------------------
-    %% Notification layer (src/shippybooks/events/notifications.py)
-    %% ----------------------------------------------------------------
-    class Notification {
-        <<abstract, frozen>>
-        +to_event(): dict[str, Any]
-    }
-    class BookNotification {
-        +book_id: str
-        +status: str
-        +stock: int
-    }
-    class OrderConfirmation {
-        +order_id: str
-        +total: float
-    }
-    class StockAlert {
-        +book_id: str
-        +current_stock: int
-    }
-    class StatusUpdate {
-        +order_id: str
-        +new_status: OrderStatus
-    }
-    class Message {
-        <<StrEnum>>
-        BOOK_NOTIFICATION
-        ORDER_CONFIRMATION
-        STOCK_ALERT
-        STATUS_UPDATE
-    }
-    Notification <|-- BookNotification
-    Notification <|-- OrderConfirmation
-    Notification <|-- StockAlert
-    Notification <|-- StatusUpdate
-
-    class NotificationHandler {
-        -_handlers: dict
-        +register(notify_type, handler): None
-        +dispatch(notification: Notification): None
-    }
-    class NotificationDispatcher {
-        -handler: NotificationHandler
-        +on_book_created(e): None
-        +on_book_updated(e): None
-        +on_order_created(e): None
-        +on_status_changed(e): None
-    }
-    class NotificationStore {
-        -_events: list[dict]
-        +append(notification): None
-        +since(last_id: int): list[dict]
-    }
-    NotificationDispatcher --> NotificationHandler
-    NotificationDispatcher --> BookNotification
-    NotificationDispatcher --> StockAlert
-    NotificationDispatcher --> OrderConfirmation
-    NotificationDispatcher --> StatusUpdate
-    NotificationHandler --> NotificationStore : append
-    EventBus --> NotificationDispatcher : calls on_*()
-
-    %% ----------------------------------------------------------------
-    %% Application wiring (bootstrap.py, main.py, settings.py)
-    %% ----------------------------------------------------------------
-    class AppState {
-        +cmd_handler: CommandHandler
-        +query_handler: QueryHandler
-        +notification_store: NotificationStore
-    }
-    class settings {
-        +database_url: str
-        +environment: str
-        +persistent_memory: bool
-    }
-    class create_app {
-        +builds the FastAPI application
-    }
-    AppState --> CommandHandler
-    AppState --> QueryHandler
-    AppState --> NotificationStore
+  class AppState {
+    cmd_handler
+    notification_store
+    query_handler
+  }
+  class Base {
+  }
+  class Book {
+    author : str
+    id : str
+    price : float
+    stock : int
+    title : str
+    update_stock(quantity: int) None
+  }
+  class BookCreated {
+    book
+  }
+  class BookNotification {
+    book_id : str
+    status : str
+    stock : int
+    to_event() dict[str, Any]
+  }
+  class BookORM {
+    author
+    id
+    price
+    stock
+    title
+    to_domain() Book
+    update_from_domain(book: Book) None
+  }
+  class BookRepository {
+    persistent_memory : bool
+    session
+    all() list[Book]
+    get(id: str) Book
+    save(book: Book) None
+  }
+  class BookUpdated {
+    book
+  }
+  class ChangeOrderStatus {
+    id : str
+    new_status
+  }
+  class ChangeStatusRequest {
+    status : str
+  }
+  class CheckResult {
+    data : dict[str, Any] | None
+    duration_ms : float
+    message : str | None
+    name : str
+    required : bool
+    status : Literal
+  }
+  class Command {
+    model_config : ConfigDict
+  }
+  class CommandHandler {
+    book_repo
+    event_bus
+    order_repo
+    handle(command: Command) None
+  }
+  class Config {
+    env_file : str
+  }
+  class CreateBook {
+    author : str
+    id : str
+    price : float
+    stock : int
+    title : str
+  }
+  class CreateBookRequest {
+    author : str
+    price : float
+    stock : int
+    title : str
+  }
+  class CreateOrder {
+    id : str
+    items : list[OrderItem]
+  }
+  class CreateOrderRequest {
+    items : list[OrderItem]
+  }
+  class DomainEvent {
+  }
+  class EventBus {
+    publish(event: DomainEvent) None
+    subscribe(event_type: type[DomainEvent], handler: Callable[..., None]) None
+  }
+  class GetBook {
+    id : str
+  }
+  class GetOrder {
+    id : str
+  }
+  class HealthResponse {
+    check : Literal['live', 'ready', 'health']
+    checks : list[CheckResult] | None
+    duration_ms : float | None
+    service : str
+    status : Literal
+    timestamp : str
+    version : str
+  }
+  class ListBooks {
+  }
+  class ListOrders {
+  }
+  class Message {
+    name
+  }
+  class Notification {
+    to_event()* dict[str, Any]
+  }
+  class NotificationDispatcher {
+    handler
+    on_book_created(e: BookCreated) None
+    on_book_updated(e: BookUpdated) None
+    on_order_created(e: OrderCreated) None
+    on_status_changed(e: OrderStatusChanged) None
+  }
+  class NotificationHandler {
+    dispatch(notification: Notification) None
+    register(notify_type: type[Notification], handler: Callable[[Notification], None]) None
+  }
+  class NotificationStore {
+    append(notification: Notification) None
+    since(last_id: int) list[dict[str, Any]]
+  }
+  class Order {
+    id : str
+    items : list[OrderItem]
+    last_updated : datetime
+    status
+    timestamp : datetime
+    total : float
+    add_item(book: Book, quantity: int) None
+    change_status(new_status: OrderStatus) None
+  }
+  class OrderConfirmation {
+    order_id : str
+    total : float
+    to_event() dict[str, Any]
+  }
+  class OrderCreated {
+    order
+  }
+  class OrderItem {
+    book_id : str
+    quantity : int
+  }
+  class OrderItemORM {
+    book_id
+    id
+    order_id
+    quantity
+    to_domain() OrderItem
+  }
+  class OrderORM {
+    id
+    items
+    last_updated
+    status
+    timestamp
+    total
+    to_domain() Order
+  }
+  class OrderRepository {
+    persistent_memory : bool
+    session
+    all() list[Order]
+    get(id: str) Order
+    save(order: Order) None
+  }
+  class OrderStatus {
+    name
+  }
+  class OrderStatusChanged {
+    new_status
+    old_status
+    order_id : str
+  }
+  class Query {
+    model_config : ConfigDict
+  }
+  class QueryHandler {
+    book_repo
+    order_repo
+    handle(query: Query) Any
+  }
+  class Settings {
+    database_url : str
+    environment : str
+    persistent_memory : bool
+  }
+  class StatusUpdate {
+    new_status
+    order_id : str
+    to_event() dict[str, Any]
+  }
+  class StockAlert {
+    book_id : str
+    current_stock : int
+    to_event() dict[str, Any]
+  }
+  class UpdateBookStock {
+    id : str
+    quantity : int
+  }
+  class UpdateStockRequest {
+    book_id : str
+    quantity : int
+  }
+  BookORM --|> Base
+  OrderItemORM --|> Base
+  OrderORM --|> Base
+  ChangeOrderStatus --|> Command
+  CreateBook --|> Command
+  CreateOrder --|> Command
+  UpdateBookStock --|> Command
+  BookCreated --|> DomainEvent
+  BookUpdated --|> DomainEvent
+  OrderCreated --|> DomainEvent
+  OrderStatusChanged --|> DomainEvent
+  GetBook --|> Query
+  GetOrder --|> Query
+  ListBooks --|> Query
+  ListOrders --|> Query
+  BookNotification --|> Notification
+  OrderConfirmation --|> Notification
+  StatusUpdate --|> Notification
+  StockAlert --|> Notification
+  BookCreated --> Book : book
+  BookUpdated --> Book : book
+  OrderCreated --> Order : order
+  ChangeOrderStatus --> OrderStatus : new_status
+  OrderStatusChanged --> OrderStatus : old_status
+  OrderStatusChanged --> OrderStatus : new_status
+  StatusUpdate --> OrderStatus : new_status
+  AppState --> NotificationStore : notification_store
+  AppState --> CommandHandler : cmd_handler
+  AppState --> QueryHandler : query_handler
+  OrderStatus --o Order : status
+  EventBus --o CommandHandler : event_bus
+  NotificationHandler --o NotificationDispatcher : handler
+  BookRepository --o CommandHandler : book_repo
+  BookRepository --o QueryHandler : book_repo
+  OrderRepository --o CommandHandler : order_repo
+  OrderRepository --o QueryHandler : order_repo
 ```
 
 View the rendered image: [diagrams/classes.png](diagrams/classes.png)
@@ -300,102 +281,97 @@ View the rendered image: [diagrams/classes.png](diagrams/classes.png)
 The project diagram shows the `shippybooks` package structure, external dependencies, and runtime request flow between modules. Source at `diagrams/project.mmd`.
 
 ```mermaid
-graph TD
-    %% ----------------------------------------------------------------
-    %% Project structure diagram for shippybooks
-    %% ----------------------------------------------------------------
-    subgraph shippybooks ["shippybooks package"]
-        direction TB
-
-        subgraph domain ["domain/"]
-            models["models.py
-Book, Order, OrderItem,
-OrderStatus"]
-            commands["commands.py
-Command hierarchy"]
-            queries["queries.py
-Query hierarchy"]
-            devents["events.py
-DomainEvent hierarchy"]
-        end
-
-        subgraph services ["services/"]
-            ch["command_handlers.py
-CommandHandler"]
-            qh["query_handlers.py
-QueryHandler"]
-            repos["repos.py
-BookRepository, OrderRepository"]
-        end
-
-        subgraph events ["events/"]
-            bus["bus.py
-EventBus"]
-            notif["notifications.py
-NotificationDispatcher,
-Notification types"]
-            store["store.py
-NotificationStore"]
-        end
-
-        subgraph api ["api/"]
-            ep["endpoints/
-books.py · orders.py
-notifications.py · health.py"]
-            deps["dependencies.py
-FastAPI Depends wiring"]
-        end
-
-        subgraph db ["db/"]
-            orm["models.py
-SQLAlchemy ORM models"]
-            sess["session.py
-engine, get_session()"]
-            base["base.py
-Base, make_engine()"]
-        end
-
-        bootstrap["bootstrap.py
-build_app_state()"]
-        main["main.py
-create_app() · uvicorn entry"]
-        settings["settings.py
-Settings
-(pydantic-settings)"]
-    end
-
-    subgraph external ["External dependencies"]
-        fastapi["FastAPI
-web framework"]
-        sqlalchemy["SQLAlchemy
-ORM / SQLite"]
-        pydantic["Pydantic
-settings & models"]
-        uvicorn["uvicorn
-ASGI server"]
-    end
-
-    %% Runtime request flow
-    client[("HTTP client")] --> ep
-    ep --> deps
-    deps --> ch
-    deps --> qh
-    bootstrap --> ch
-    bootstrap --> qh
-    bootstrap --> store
-    main --> bootstrap
-    main --> settings
-
-    %% Command side
-    ch --> repos
-    ch --> bus
-    qh --> repos
-    repos --> orm
-    orm --> sess
-
-    %% Event-driven notifications
-    bus --> notif
-    notif --> store
+classDiagram
+  class shippybooks {
+  }
+  class api {
+  }
+  class dependencies {
+  }
+  class endpoints {
+  }
+  class books {
+  }
+  class health {
+  }
+  class notifications {
+  }
+  class orders {
+  }
+  class bootstrap {
+  }
+  class db {
+  }
+  class base {
+  }
+  class models {
+  }
+  class session {
+  }
+  class domain {
+  }
+  class commands {
+  }
+  class events {
+  }
+  class models {
+  }
+  class queries {
+  }
+  class events {
+  }
+  class bus {
+  }
+  class notifications {
+  }
+  class store {
+  }
+  class main {
+  }
+  class services {
+  }
+  class command_handlers {
+  }
+  class query_handlers {
+  }
+  class repos {
+  }
+  class settings {
+  }
+  api --> dependencies
+  api --> endpoints
+  endpoints --> books
+  endpoints --> health
+  endpoints --> notifications
+  endpoints --> orders
+  bootstrap --> db
+  bootstrap --> events
+  bootstrap --> events
+  bootstrap --> bus
+  bootstrap --> notifications
+  bootstrap --> services
+  bootstrap --> query_handlers
+  db --> base
+  db --> models
+  db --> session
+  session --> base
+  domain --> commands
+  domain --> models
+  domain --> queries
+  domain --> events
+  commands --> models
+  events --> models
+  events --> bus
+  events --> notifications
+  events --> store
+  store --> notifications
+  main --> api
+  main --> bootstrap
+  main --> db
+  services --> command_handlers
+  services --> query_handlers
+  command_handlers --> repos
+  query_handlers --> command_handlers
 ```
 
 View the rendered image: [diagrams/project.png](diagrams/project.png)

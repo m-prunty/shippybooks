@@ -1,70 +1,91 @@
-graph TD
-    %% ----------------------------------------------------------------
-    %% Project structure diagram for shippybooks
-    %% ----------------------------------------------------------------
-    subgraph shippybooks ["shippybooks package"]
-        direction TB
-
-        subgraph domain ["domain/"]
-            models["models.py\nBook, Order, OrderItem,\nOrderStatus"]
-            commands["commands.py\nCommand hierarchy"]
-            queries["queries.py\nQuery hierarchy"]
-            devents["events.py\nDomainEvent hierarchy"]
-        end
-
-        subgraph services ["services/"]
-            ch["command_handlers.py\nCommandHandler"]
-            qh["query_handlers.py\nQueryHandler"]
-            repos["repos.py\nBookRepository, OrderRepository"]
-        end
-
-        subgraph events ["events/"]
-            bus["bus.py\nEventBus"]
-            notif["notifications.py\nNotificationDispatcher,\nNotification types"]
-            store["store.py\nNotificationStore"]
-        end
-
-        subgraph api ["api/"]
-            ep["endpoints/\nbooks.py · orders.py\nnotifications.py · health.py"]
-            deps["dependencies.py\nFastAPI Depends wiring"]
-        end
-
-        subgraph db ["db/"]
-            orm["models.py\nSQLAlchemy ORM models"]
-            sess["session.py\nengine, get_session()"]
-            base["base.py\nBase, make_engine()"]
-        end
-
-        bootstrap["bootstrap.py\nbuild_app_state()"]
-        main["main.py\ncreate_app() · uvicorn entry"]
-        settings["settings.py\nSettings\n(pydantic-settings)"]
-    end
-
-    subgraph external ["External dependencies"]
-        fastapi["FastAPI\nweb framework"]
-        sqlalchemy["SQLAlchemy\nORM / SQLite"]
-        pydantic["Pydantic\nsettings & models"]
-        uvicorn["uvicorn\nASGI server"]
-    end
-
-    %% Runtime request flow
-    client[("HTTP client")] --> ep
-    ep --> deps
-    deps --> ch
-    deps --> qh
-    bootstrap --> ch
-    bootstrap --> qh
-    bootstrap --> store
-    main --> bootstrap
-    main --> settings
-
-    %% Command side
-    ch --> repos
-    ch --> bus
-    qh --> repos
-    repos --> orm
-    orm --> sess
-
-    %% Event-driven notifications
-    bus --> notif
-    notif --> store
+classDiagram
+  class shippybooks {
+  }
+  class api {
+  }
+  class dependencies {
+  }
+  class endpoints {
+  }
+  class books {
+  }
+  class health {
+  }
+  class notifications {
+  }
+  class orders {
+  }
+  class bootstrap {
+  }
+  class db {
+  }
+  class base {
+  }
+  class models {
+  }
+  class session {
+  }
+  class domain {
+  }
+  class commands {
+  }
+  class events {
+  }
+  class models {
+  }
+  class queries {
+  }
+  class events {
+  }
+  class bus {
+  }
+  class notifications {
+  }
+  class store {
+  }
+  class main {
+  }
+  class services {
+  }
+  class command_handlers {
+  }
+  class query_handlers {
+  }
+  class repos {
+  }
+  class settings {
+  }
+  api --> dependencies
+  api --> endpoints
+  endpoints --> books
+  endpoints --> health
+  endpoints --> notifications
+  endpoints --> orders
+  bootstrap --> db
+  bootstrap --> events
+  bootstrap --> events
+  bootstrap --> bus
+  bootstrap --> notifications
+  bootstrap --> services
+  bootstrap --> query_handlers
+  db --> base
+  db --> models
+  db --> session
+  session --> base
+  domain --> commands
+  domain --> models
+  domain --> queries
+  domain --> events
+  commands --> models
+  events --> models
+  events --> bus
+  events --> notifications
+  events --> store
+  store --> notifications
+  main --> api
+  main --> bootstrap
+  main --> db
+  services --> command_handlers
+  services --> query_handlers
+  command_handlers --> repos
+  query_handlers --> command_handlers

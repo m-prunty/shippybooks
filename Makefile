@@ -14,6 +14,7 @@ lint:
 	uv run mypy --strict src
 
 diagrams: | _diagrams_dir readme
+	cd diagrams && uv run pyreverse ../src/shippybooks -o mmd -p shippybooks && mv classes_shippybooks.mmd classes.mmd && mv packages_shippybooks.mmd project.mmd
 	cd diagrams && uv run pyreverse ../src/shippybooks -o png -p shippybooks && mv classes_shippybooks.png classes.png && mv packages_shippybooks.png project.png
 	dot -Tpng diagrams/control-flow.dot -o diagrams/control-flow.png
 
