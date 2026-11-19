@@ -4,7 +4,7 @@ from .dependencies import (
     NotificationStoreDep,
     QueryHandlerDep,
 )
-from .endpoints import books_router, notifications_router, orders_router
+from .endpoints import books_router, health_router, notifications_router, orders_router
 
 __all__ = [
     "AppState",
@@ -12,6 +12,7 @@ __all__ = [
     "NotificationStoreDep",
     "QueryHandlerDep",
     "books_router",
+    "health_router",
     "notifications_router",
     "orders_router",
 ]

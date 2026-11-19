@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import books_router, notifications_router, orders_router
+from .api import books_router, health_router, notifications_router, orders_router
 from .bootstrap import build_app_state
 from .db import Base, BookORM, OrderItemORM, OrderORM, engine
 
@@ -14,6 +14,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="CQRS Notification System")
     app.state.app_state = build_app_state()
 
+    app.include_router(health_router)
     app.include_router(books_router, prefix="/api/v1")
     app.include_router(orders_router, prefix="/api/v1")
     app.include_router(notifications_router, prefix="/api/v1")
