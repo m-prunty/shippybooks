@@ -37,7 +37,8 @@ DIAGRAMS_ORDER = [
         "### Control flow diagram",
         "The control flow diagram shows the write path (commands), query path "
         "(reads), health probe path, event-driven notifications, and optional "
-        "persistence",
+        "persistence. Rendered from `diagrams/control-flow.dot` with Graphviz "
+        "`dot`",
     ),
 ]
 

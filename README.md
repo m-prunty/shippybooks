@@ -402,7 +402,7 @@ View the rendered image: [diagrams/project.png](diagrams/project.png)
 
 ### Control flow diagram
 
-The control flow diagram shows the write path (commands), query path (reads), health probe path, event-driven notifications, and optional persistence. Source at `diagrams/control-flow.mmd`.
+The control flow diagram shows the write path (commands), query path (reads), health probe path, event-driven notifications, and optional persistence. Rendered from `diagrams/control-flow.dot` with Graphviz `dot`. Source at `diagrams/control-flow.mmd`.
 
 ```mermaid
 flowchart TD
