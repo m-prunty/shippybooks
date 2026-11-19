@@ -378,7 +378,7 @@ View the rendered image: [diagrams/project.png](diagrams/project.png)
 
 ### Control flow diagram
 
-The control flow diagram shows the write path (commands), query path (reads), health probe path, event-driven notifications, and optional persistence. Rendered from `diagrams/control-flow.dot` with Graphviz `dot`. Source at `diagrams/control-flow.mmd`.
+The control flow diagram shows the write path (commands), query path (reads), health probe path, event-driven notifications, and optional persistence. Auto-generated from source via `scripts/gen_control_flow.py`. Source at `diagrams/control-flow.mmd`.
 
 ```mermaid
 flowchart TD
@@ -484,16 +484,16 @@ Query hierarchy"]
 
     %% Runtime request flow
     Client -->|POST /books/| create_book
-    Client -->|POST /books/{book_id}/stock/| update_stock
-    Client -->|GET /books/{book_id}| get_book
+    Client -->|POST /books/&#123;book_id&#125;/stock/| update_stock
+    Client -->|GET /books/&#123;book_id&#125;| get_book
     Client -->|GET /books/| list_books
     Client -->|GET /health/live| health_live
     Client -->|GET /health/ready| health_ready
     Client -->|GET /health| health
     Client -->|GET /notifications/stream| notification_stream
     Client -->|POST /orders/| create_order
-    Client -->|POST /orders/{order_id}/status/| change_status
-    Client -->|GET /orders/{order_id}| get_order
+    Client -->|POST /orders/&#123;order_id&#125;/status/| change_status
+    Client -->|GET /orders/&#123;order_id&#125;| get_order
     Client -->|GET /orders/| list_orders
     Client -->|ON_EVENT startup| _create_tables
 

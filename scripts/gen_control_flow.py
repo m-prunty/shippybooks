@@ -188,6 +188,15 @@ def node_id(text: str) -> str:
     return safe
 
 
+def escape_mmd_label(label: str) -> str:
+    """Escape Mermaid special characters in edge/node labels.
+
+    Curly braces are interpreted as diamond-shape syntax in edge labels,
+    so they must be HTML-entity-escaped.
+    """
+    return label.replace("{", "&#123;").replace("}", "&#125;")
+
+
 def emit(index: SourceIndex) -> str:
     lines: list[str] = []
     lines.append("flowchart TD")
@@ -285,7 +294,8 @@ def emit(index: SourceIndex) -> str:
     lines.append("    %% Runtime request flow")
     for r in index.routes:
         nid = node_id(r["func"])
-        lines.append(f'    Client -->|{r["method"]} {r["path"]}| {nid}')
+        safe_path = escape_mmd_label(r["path"])
+        lines.append(f'    Client -->|{r["method"]} {safe_path}| {nid}')
 
     lines.append("")
     lines.append("    %% Endpoint -> dependency wiring")
